@@ -1,0 +1,407 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ADD CITY MODEL
+model City {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  code       String   @unique
+  isActive   Boolean  @default(true)
+  orderCount Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  orders      Order[]
+  deliveryMen DeliveryMan[]
+
+  @@index([name], map: "City_name_idx")
+  @@index([code], map: "City_code_idx")
+  @@index([isActive], map: "City_isActive_idx")
+  @@index([createdAt(sort: Desc)], map: "City_createdAt_desc_idx")
+}
+
+model User {
+  id                  Int            @id @default(autoincrement())
+  name                String
+  email               String         @unique
+  phone               String?
+  password            String
+  role                Role           @default(MERCHANT)
+  notificationEnabled Boolean        @default(true)
+  image               String?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  admin               Admin?
+  deliveryMan         DeliveryMan?
+  merchant            Merchant?
+  notifications       Notification[]
+
+  @@index([email], map: "User_email_idx")
+  @@index([role], map: "User_role_idx")
+  @@index([createdAt(sort: Desc)], map: "User_createdAt_desc_idx")
+  @@index([phone], map: "User_phone_idx")
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  address   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Merchant {
+  id               Int               @id @default(autoincrement())
+  userId           Int               @unique
+  companyName      String?
+  rib              String?
+  bankName         String?
+  balance          Float             @default(0)
+  totalEarned      Float             @default(0)
+  baseFee          Float             @default(0)
+  createdAt        DateTime          @default(now())
+  user             User              @relation(fields: [userId], references: [id])
+  moneyTransfers   MoneyTransfer[]
+  orders           Order[]
+  products         Product[]
+  productTransfers ProductTransfer[]
+
+  @@index([userId], map: "Merchant_userId_idx")
+  @@index([createdAt(sort: Desc)], map: "Merchant_createdAt_desc_idx")
+  @@index([companyName], map: "Merchant_companyName_idx")
+  @@index([balance], map: "Merchant_balance_idx")
+  @@index([totalEarned(sort: Desc)], map: "Merchant_totalEarned_desc_idx")
+}
+
+model Product {
+  id             Int            @id @default(autoincrement())
+  merchantId     Int
+  name           String
+  description    String?
+  image          String?
+  sku            String?        @unique
+  stockQuantity  Int            @default(0)
+  deliveredCount Int            @default(0)
+  lowStockAlert  Int            @default(3)
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  orderItems     OrderItem[]
+  merchant       Merchant       @relation(fields: [merchantId], references: [id])
+  TransferItem   TransferItem[]
+
+  @@index([merchantId], map: "Product_merchantId_idx")
+  @@index([merchantId, isActive], map: "Product_merchantId_isActive_idx")
+  @@index([merchantId, stockQuantity], map: "Product_merchantId_stockQuantity_idx")
+  @@index([merchantId, deliveredCount], map: "Product_merchantId_deliveredCount_idx")
+  @@index([merchantId, isActive, stockQuantity], map: "Product_merchantId_isActive_stockQuantity_idx")
+  @@index([stockQuantity], map: "Product_stockQuantity_idx")
+  @@index([isActive], map: "Product_isActive_idx")
+  @@index([createdAt(sort: Desc)], map: "Product_createdAt_desc_idx")
+  @@index([lowStockAlert], map: "Product_lowStockAlert_idx")
+  @@index([deliveredCount], map: "Product_deliveredCount_idx")
+  @@index([merchantId, createdAt(sort: Desc)], map: "Product_merchantId_createdAt_desc_idx")
+  @@index([name], map: "Product_name_idx")
+}
+
+model ProductTransfer {
+  id                     Int            @id @default(autoincrement())
+  transferCode           String         @unique
+  merchantId             Int
+  deliveryCompany        String?
+  trackingNumber         String?
+  note                   String?
+  status                 TransferStatus @default(PENDING)
+  shippedAt              DateTime?
+  deliveredToWarehouseAt DateTime?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  merchant               Merchant       @relation(fields: [merchantId], references: [id])
+  transferItems          TransferItem[]
+
+  @@index([merchantId], map: "ProductTransfer_merchantId_idx")
+  @@index([merchantId, createdAt(sort: Desc)], map: "ProductTransfer_merchantId_createdAt_desc_idx")
+  @@index([merchantId, status], map: "ProductTransfer_merchantId_status_idx")
+  @@index([status], map: "ProductTransfer_status_idx")
+  @@index([trackingNumber], map: "ProductTransfer_trackingNumber_idx")
+  @@index([createdAt(sort: Desc)], map: "ProductTransfer_createdAt_desc_idx")
+  @@index([deliveredToWarehouseAt], map: "ProductTransfer_deliveredToWarehouseAt_idx")
+  @@index([merchantId, status, createdAt(sort: Desc)], map: "ProductTransfer_merchantId_status_createdAt_desc_idx")
+}
+
+model TransferItem {
+  id         Int             @id @default(autoincrement())
+  transferId Int
+  productId  Int
+  quantity   Int
+  product    Product         @relation(fields: [productId], references: [id])
+  transfer   ProductTransfer @relation(fields: [transferId], references: [id])
+
+  @@index([transferId], map: "TransferItem_transferId_idx")
+  @@index([productId], map: "TransferItem_productId_idx")
+  @@index([transferId, productId], map: "TransferItem_transferId_productId_idx")
+  @@index([quantity], map: "TransferItem_quantity_idx")
+}
+
+model Order {
+  id                     Int               @id @default(autoincrement())
+  orderCode              String            @unique
+  customerName           String
+  customerPhone          String
+  address                String
+  delivery_date          DateTime?
+  previous_delivery_date DateTime?
+  delay_reason           String?
+  cityId                 Int
+  note                   String?
+  totalPrice             Float
+  paymentMethod          PaymentMethod     @default(COD)
+  merchantEarning        Float
+  status                 OrderStatus       @default(PENDING)
+  merchantId             Int
+  deliveryManId          Int?
+  discountType           DiscountType?
+  discountValue          Float?
+  discountDescription    String?
+  originalTotalPrice     Float?
+  totalDiscount          Float?
+  buyXGetYConfig         String?
+  createdAt              DateTime          @default(now())
+  deliveredAt            DateTime?
+  updatedAt              DateTime          @updatedAt
+  Notification           Notification[]
+  deliveryAttemptHistory DeliveryAttempt[]
+  deliveryNotes          DeliveryNote[]
+  deliveryMan            DeliveryMan?      @relation(fields: [deliveryManId], references: [id])
+  merchant               Merchant          @relation(fields: [merchantId], references: [id])
+  city                   City              @relation(fields: [cityId], references: [id])
+  orderItems             OrderItem[]
+
+  @@index([merchantId], map: "Order_merchantId_idx")
+  @@index([merchantId, createdAt(sort: Desc)], map: "Order_merchantId_createdAt_desc_idx")
+  @@index([merchantId, status], map: "Order_merchantId_status_idx")
+  @@index([merchantId, status, createdAt(sort: Desc)], map: "Order_merchantId_status_createdAt_desc_idx")
+  @@index([deliveryManId], map: "Order_deliveryManId_idx")
+  @@index([deliveryManId, status], map: "Order_deliveryManId_status_idx")
+  @@index([deliveryManId, status, createdAt(sort: Desc)], map: "Order_deliveryManId_status_createdAt_desc_idx")
+  @@index([cityId], map: "Order_cityId_idx")
+  @@index([cityId, status], map: "Order_cityId_status_idx")
+  @@index([cityId, createdAt(sort: Desc)], map: "Order_cityId_createdAt_desc_idx")
+  @@index([status], map: "Order_status_idx")
+  @@index([createdAt(sort: Desc)], map: "Order_createdAt_desc_idx")
+  @@index([orderCode], map: "Order_orderCode_idx")
+  @@index([customerPhone], map: "Order_customerPhone_idx")
+  @@index([paymentMethod], map: "Order_paymentMethod_idx")
+  @@index([totalPrice], map: "Order_totalPrice_idx")
+  @@index([merchantEarning], map: "Order_merchantEarning_idx")
+  @@index([deliveredAt], map: "Order_deliveredAt_idx")
+  @@index([merchantId, paymentMethod, status], map: "Order_merchantId_paymentMethod_status_idx")
+  @@index([customerName], map: "Order_customerName_idx")
+  @@index([address], map: "Order_address_idx")
+  @@index([merchantId, deliveryManId, createdAt(sort: Desc)], map: "Order_merchantId_deliveryManId_createdAt_desc_idx")
+}
+
+// NEW: Delivery Note Model
+model DeliveryNote {
+  id            Int         @id @default(autoincrement())
+  orderId       Int
+  deliveryManId Int
+  content       String
+  isPrivate     Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  order         Order       @relation(fields: [orderId], references: [id])
+  deliveryMan   DeliveryMan @relation(fields: [deliveryManId], references: [id])
+
+  // Existing indexes with explicit names
+  @@index([orderId], map: "DeliveryNote_orderId_idx")
+  @@index([deliveryManId], map: "DeliveryNote_deliveryManId_idx")
+  @@index([createdAt(sort: Desc)], map: "DeliveryNote_createdAt_desc_idx")
+  @@index([orderId, createdAt(sort: Desc)], map: "DeliveryNote_orderId_createdAt_desc_idx")
+  @@index([deliveryManId, createdAt(sort: Desc)], map: "DeliveryNote_deliveryManId_createdAt_desc_idx")
+
+  // Additional indexes with unique names
+  @@index([isPrivate], map: "DeliveryNote_isPrivate_idx")
+  @@index([deliveryManId, isPrivate], map: "DeliveryNote_deliveryManId_isPrivate_idx")
+  @@index([orderId, deliveryManId], map: "DeliveryNote_orderId_deliveryManId_idx")
+  @@index([deliveryManId, orderId], map: "DeliveryNote_deliveryManId_orderId_idx")
+  @@index([deliveryManId, orderId, createdAt(sort: Desc)], map: "DeliveryNote_deliveryManId_orderId_createdAt_desc_idx")
+  @@index([updatedAt(sort: Desc)], map: "DeliveryNote_updatedAt_desc_idx")
+  @@index([deliveryManId, isPrivate, createdAt(sort: Desc)], map: "DeliveryNote_deliveryManId_isPrivate_createdAt_desc_idx")
+  @@index([orderId, isPrivate], map: "DeliveryNote_orderId_isPrivate_idx")
+  @@index([createdAt(sort: Asc)], map: "DeliveryNote_createdAt_asc_idx")
+  @@index([deliveryManId, updatedAt(sort: Desc)], map: "DeliveryNote_deliveryManId_updatedAt_desc_idx")
+}
+
+model DeliveryAttempt {
+  id            Int           @id @default(autoincrement())
+  orderId       Int
+  attemptNumber Int
+  deliveryManId Int?
+  attemptedAt   DateTime      @default(now())
+  status        AttemptStatus
+  reason        String?
+  notes         String?
+  location      String?
+  deliveryMan   DeliveryMan?  @relation(fields: [deliveryManId], references: [id])
+  order         Order         @relation(fields: [orderId], references: [id])
+
+  @@unique([orderId, attemptNumber])
+  @@index([orderId], map: "DeliveryAttempt_orderId_idx")
+  @@index([deliveryManId], map: "DeliveryAttempt_deliveryManId_idx")
+  @@index([attemptedAt(sort: Desc)], map: "DeliveryAttempt_attemptedAt_desc_idx")
+  @@index([orderId, attemptedAt(sort: Desc)], map: "DeliveryAttempt_orderId_attemptedAt_desc_idx")
+  @@index([status], map: "DeliveryAttempt_status_idx")
+  @@index([deliveryManId, attemptedAt(sort: Desc)], map: "DeliveryAttempt_deliveryManId_attemptedAt_desc_idx")
+}
+
+model OrderItem {
+  id            Int     @id @default(autoincrement())
+  orderId       Int
+  productId     Int
+  quantity      Int
+  price         Float
+  originalPrice Float?
+  isFree        Boolean @default(false)
+  order         Order   @relation(fields: [orderId], references: [id])
+  product       Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId], map: "OrderItem_orderId_idx")
+  @@index([productId], map: "OrderItem_productId_idx")
+  @@index([orderId, productId], map: "OrderItem_orderId_productId_idx")
+  @@index([quantity], map: "OrderItem_quantity_idx")
+  @@index([price], map: "OrderItem_price_idx")
+  @@index([orderId, isFree], map: "OrderItem_orderId_isFree_idx")
+  @@index([productId, orderId], map: "OrderItem_productId_orderId_idx")
+}
+
+model DeliveryMan {
+  id                   Int               @id @default(autoincrement())
+  userId               Int               @unique
+  vehicleType          String?
+  cityId               Int?
+  active               Boolean           @default(true)
+  totalDeliveries      Int               @default(0)
+  successfulDeliveries Int               @default(0)
+  totalEarned          Float             @default(0)
+  pendingEarnings      Float             @default(0)
+  collectedCOD         Float             @default(0)
+  pendingCOD           Float             @default(0)
+  baseFee              Float             @default(0)
+  rating               Float?
+  createdAt            DateTime          @default(now())
+  user                 User              @relation(fields: [userId], references: [id])
+  city                 City?             @relation(fields: [cityId], references: [id])
+  assignedOrders       Order[]
+  deliveryAttempts     DeliveryAttempt[]
+  deliveryNotes        DeliveryNote[]
+  moneyTransfers       MoneyTransfer[]
+
+  @@index([userId], map: "DeliveryMan_userId_idx")
+  @@index([cityId], map: "DeliveryMan_cityId_idx")
+  @@index([cityId, active], map: "DeliveryMan_cityId_active_idx")
+  @@index([active], map: "DeliveryMan_active_idx")
+  @@index([createdAt(sort: Desc)], map: "DeliveryMan_createdAt_desc_idx")
+  @@index([totalEarned], map: "DeliveryMan_totalEarned_idx")
+  @@index([rating], map: "DeliveryMan_rating_idx")
+  @@index([cityId, active, createdAt(sort: Desc)], map: "DeliveryMan_cityId_active_createdAt_desc_idx")
+  @@index([active, cityId, rating(sort: Desc)], map: "DeliveryMan_active_cityId_rating_desc_idx")
+  @@index([active, totalDeliveries(sort: Desc)], map: "DeliveryMan_active_totalDeliveries_desc_idx")
+}
+
+model MoneyTransfer {
+  id            Int          @id @default(autoincrement())
+  merchantId    Int?
+  deliveryManId Int?
+  amount        Float
+  transferDate  DateTime     @default(now())
+  invoiceImage  String?
+  reference     String?
+  note          String?
+  createdAt     DateTime     @default(now())
+  merchant      Merchant?    @relation(fields: [merchantId], references: [id])
+  deliveryMan   DeliveryMan? @relation(fields: [deliveryManId], references: [id])
+
+  @@index([merchantId], map: "MoneyTransfer_merchantId_idx")
+  @@index([merchantId, transferDate(sort: Desc)], map: "MoneyTransfer_merchantId_transferDate_desc_idx")
+  @@index([deliveryManId], map: "MoneyTransfer_deliveryManId_idx")
+  @@index([deliveryManId, transferDate(sort: Desc)], map: "MoneyTransfer_deliveryManId_transferDate_desc_idx")
+  @@index([transferDate(sort: Desc)], map: "MoneyTransfer_transferDate_desc_idx")
+  @@index([amount], map: "MoneyTransfer_amount_idx")
+  @@index([merchantId, amount, transferDate(sort: Desc)], map: "MoneyTransfer_merchantId_amount_transferDate_desc_idx")
+  @@index([deliveryManId, amount, transferDate(sort: Desc)], map: "MoneyTransfer_deliveryManId_amount_transferDate_desc_idx")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  userId    Int
+  orderId   Int?
+  createdAt DateTime @default(now())
+  order     Order?   @relation(fields: [orderId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Notification_userId_idx")
+  @@index([userId, isRead], map: "Notification_userId_isRead_idx")
+  @@index([userId, createdAt(sort: Desc)], map: "Notification_userId_createdAt_desc_idx")
+  @@index([orderId], map: "Notification_orderId_idx")
+  @@index([isRead], map: "Notification_isRead_idx")
+  @@index([createdAt(sort: Desc)], map: "Notification_createdAt_desc_idx")
+  @@index([type], map: "Notification_type_idx")
+  @@index([userId, isRead, createdAt(sort: Desc)], map: "Notification_userId_isRead_createdAt_desc_idx")
+}
+
+enum Role {
+  ADMIN
+  MERCHANT
+  DELIVERYMAN
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  ASSIGNED_TO_DELIVERY
+  DELIVERED
+  DELAYED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  COD
+  PREPAID
+}
+
+enum TransferStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED_TO_WAREHOUSE
+  CANCELLED
+}
+
+enum AttemptStatus {
+  ATTEMPTED
+  FAILED
+  SUCCESSFUL
+  CUSTOMER_NOT_AVAILABLE
+  WRONG_ADDRESS
+  REFUSED
+  OTHER
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUY_X_GET_Y
+  CUSTOM_PRICE
+}

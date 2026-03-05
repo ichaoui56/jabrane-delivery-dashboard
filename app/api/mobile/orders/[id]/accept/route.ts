@@ -29,13 +29,18 @@ export async function POST(
       return jsonError("Invalid order ID", 400)
     }
 
-    // Fetch the order with merchant info for notifications
+    // Fetch the order with merchant and city info for notifications
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
         merchant: {
           select: {
             userId: true,
+          },
+        },
+        city: {
+          select: {
+            name: true,
           },
         },
       },
@@ -54,9 +59,9 @@ export async function POST(
     }
 
     // Validate city match
-    if (deliveryMan.city && order.city !== deliveryMan.city) {
+    if (deliveryMan.city && order.city.name !== deliveryMan.city) {
       return jsonError(
-        `Cannot accept orders from ${order.city}. You are assigned to ${deliveryMan.city}`,
+        `Cannot accept orders from ${order.city.name}. You are assigned to ${deliveryMan.city}`,
         403
       )
     }

@@ -74,6 +74,13 @@ export async function GET(request: Request) {
           orderBy: { attemptedAt: "desc" },
           take: 1,
         },
+        city: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: limitedTake,

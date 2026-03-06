@@ -826,6 +826,70 @@ export async function collectCODFromDeliveryMan(deliveryManId: number, amount: n
   }
 }
 
+export async function deleteDeliveryMan(deliveryManId: number) {
+  try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== Role.ADMIN) {
+      return { success: false, error: "غير مصرح. يجب أن تكون مديرًا." }
+    }
+
+    // Check if delivery man has assigned orders
+    const assignedOrders = await prisma.order.findMany({
+      where: { 
+        deliveryManId: deliveryManId,
+        status: {
+          in: [OrderStatus.ASSIGNED_TO_DELIVERY, OrderStatus.PENDING, OrderStatus.ACCEPTED]
+        }
+      }
+    })
+
+    if (assignedOrders.length > 0) {
+      return { success: false, error: "لا يمكن حذف موظف التوصيل لديه طلبات معينة أو قيد التنفيذ" }
+    }
+
+    // Get delivery man with user ID
+    const deliveryMan = await prisma.deliveryMan.findUnique({
+      where: { id: deliveryManId },
+      select: { userId: true }
+    })
+
+    if (!deliveryMan) {
+      return { success: false, error: "موظف التوصيل غير موجود" }
+    }
+
+    // Delete in transaction to maintain data integrity
+    await prisma.$transaction(async (tx) => {
+      // Delete related records first
+      await tx.deliveryAttempt.deleteMany({
+        where: { deliveryManId: deliveryManId }
+      })
+
+      await tx.deliveryNote.deleteMany({
+        where: { deliveryManId: deliveryManId }
+      })
+
+      await tx.moneyTransfer.deleteMany({
+        where: { deliveryManId: deliveryManId }
+      })
+
+      // Delete delivery man
+      await tx.deliveryMan.delete({
+        where: { id: deliveryManId }
+      })
+
+      // Delete user
+      await tx.user.delete({
+        where: { id: deliveryMan.userId }
+      })
+    })
+
+    return { success: true, message: "تم حذف موظف التوصيل بنجاح" }
+  } catch (error) {
+    console.error("[v0] Error deleting delivery man:", error)
+    return { success: false, error: "حدث خطأ أثناء حذف موظف التوصيل" }
+  }
+}
+
 export async function payDeliveryManEarnings(deliveryManId: number, amount: number) {
   try {
     const session = await auth()

@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { updateMerchant } from "@/lib/actions/admin/merchant"
+import { updateMerchant, deleteMerchant } from "@/lib/actions/admin/merchant"
 import { compressImage } from "@/lib/utils/image-compression"
-import { Eye, EyeOff, Loader2, Upload } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Upload, Trash2 } from 'lucide-react'
 
 type Merchant = {
   id: number
@@ -34,16 +34,20 @@ type Merchant = {
 export function EditMerchantDialog({ 
   merchant,
   children,
-  onSuccess 
+  onSuccess,
+  onDelete
 }: { 
   merchant: Merchant
   children: React.ReactNode
   onSuccess?: (merchant: any) => void
+  onDelete?: (merchantId: number) => void
 }) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const [name, setName] = useState(merchant.user.name)
   const [email, setEmail] = useState(merchant.user.email)
@@ -56,6 +60,29 @@ export function EditMerchantDialog({
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [profileImage, setProfileImage] = useState<string | null>(merchant.user.image)
   const [imagePreview, setImagePreview] = useState<string | null>(merchant.user.image)
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    setMessage(null)
+
+    const result = await deleteMerchant(merchant.id)
+
+    if (result.success) {
+      setMessage({ type: "success", text: result.message || "تم حذف التاجر بنجاح" })
+      if (onDelete) {
+        onDelete(merchant.id)
+      }
+      setTimeout(() => {
+        setOpen(false)
+        setShowDeleteDialog(false)
+      }, 1000)
+    } else {
+      setMessage({ type: "error", text: result.error || "حدث خطأ أثناء الحذف" })
+      setShowDeleteDialog(false)
+    }
+
+    setIsDeleting(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,7 +108,6 @@ export function EditMerchantDialog({
       }
       setTimeout(() => {
         setOpen(false)
-        window.location.reload()
       }, 1000)
     } else {
       setMessage({ type: "error", text: result.error || "حدث خطأ" })
@@ -294,7 +320,7 @@ export function EditMerchantDialog({
           <div className="flex gap-2 pt-4">
             <Button
               type="submit"
-              disabled={isLoading || uploadingImage}
+              disabled={isLoading || uploadingImage || isDeleting}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
             >
               {isLoading ? "جاري الحفظ..." : "حفظ التغييرات"}
@@ -302,13 +328,57 @@ export function EditMerchantDialog({
             <Button
               type="button"
               variant="outline"
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={isLoading || isDeleting}
+              className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
+            >
+              <Trash2 className="w-4 h-4 ml-2" />
+              حذف
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => setOpen(false)}
-              disabled={isLoading}
+              disabled={isLoading || isDeleting}
             >
               إلغاء
             </Button>
           </div>
         </form>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-red-600">تأكيد الحذف</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-gray-700">
+                هل أنت متأكد من حذف التاجر "{merchant.user.name}"؟
+              </p>
+              <p className="text-sm text-gray-500">
+                سيتم حذف جميع البيانات المرتبطة به (المنتجات، الطلبات، التحويلات المالية) بشكل دائم. لا يمكن التراجع عن هذا الإجراء.
+              </p>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 bg-red-600 hover:bg-red-700"
+                >
+                  {isDeleting ? "جاري الحذف..." : "تأكيد الحذف"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowDeleteDialog(false)}
+                  disabled={isDeleting}
+                >
+                  إلغاء
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   )

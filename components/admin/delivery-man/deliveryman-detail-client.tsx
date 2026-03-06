@@ -2,6 +2,7 @@
 
 import { createSlugWithId } from "@/lib/utils/slug"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -110,6 +111,7 @@ type DeliveryManDetail = {
 }
 
 export function DeliveryManDetailClient({ initialDeliveryMan }: { initialDeliveryMan: DeliveryManDetail }) {
+  const router = useRouter()
   const [deliveryMan, setDeliveryMan] = useState<DeliveryManDetail>(initialDeliveryMan)
   const [processingOrder, setProcessingOrder] = useState<number | null>(null)
   const [updatingData, setUpdatingData] = useState(false)
@@ -218,6 +220,12 @@ export function DeliveryManDetailClient({ initialDeliveryMan }: { initialDeliver
     toast.success("تم تحديث بيانات موظف التوصيل بنجاح")
   }
 
+  const handleDeliveryManDeleted = (deliveryManId: number) => {
+    // Redirect to delivery men list after deletion
+    router.push('/admin/delivery-men')
+    toast.success("تم حذف موظف التوصيل بنجاح")
+  }
+
   const refreshData = async () => {
     setUpdatingData(true)
     try {
@@ -299,6 +307,7 @@ export function DeliveryManDetailClient({ initialDeliveryMan }: { initialDeliver
           <EditDeliveryManDialog
             deliveryMan={deliveryMan}
             onSuccess={handleDeliveryManUpdated}
+            onDelete={handleDeliveryManDeleted}
           >
             <Button
               variant="outline"

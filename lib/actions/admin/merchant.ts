@@ -13,7 +13,15 @@ export async function getMerchants() {
     }
 
     const merchants = await prisma.merchant.findMany({
-      include: {
+      select: {
+        id: true,
+        companyName: true,
+        rib: true,
+        bankName: true,
+        balance: true,
+        totalEarned: true,
+        baseFee: true,
+        createdAt: true,
         user: {
           select: {
             id: true,
@@ -112,8 +120,24 @@ export async function createMerchant(data: {
           },
         },
       },
-      include: {
-        user: true,
+      select: {
+        id: true,
+        companyName: true,
+        rib: true,
+        bankName: true,
+        balance: true,
+        totalEarned: true,
+        baseFee: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            image: true,
+          },
+        },
         _count: {
           select: {
             orders: true,
@@ -317,6 +341,96 @@ export async function getMerchantDetail(merchantId: number) {
   } catch (error) {
     console.error("[v0] Error fetching merchant detail:", error)
     return { success: false, message: "حدث خطأ أثناء جلب بيانات التاجر" }
+  }
+}
+
+export async function deleteMerchant(merchantId: number) {
+  try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return { success: false, error: "غير مصرح. يجب أن تكون مديرًا." }
+    }
+
+    // Check if merchant has active orders
+    const activeOrders = await prisma.order.findMany({
+      where: { 
+        merchantId: merchantId,
+        status: {
+          in: ["PENDING", "ACCEPTED", "ASSIGNED_TO_DELIVERY"]
+        }
+      }
+    })
+
+    if (activeOrders.length > 0) {
+      return { success: false, error: "لا يمكن حذف التاجر لديه طلبات نشطة" }
+    }
+
+    // Get merchant with user ID
+    const merchant = await prisma.merchant.findUnique({
+      where: { id: merchantId },
+      select: { userId: true }
+    })
+
+    if (!merchant) {
+      return { success: false, error: "التاجر غير موجود" }
+    }
+
+    // Delete in transaction to maintain data integrity
+    await prisma.$transaction(async (tx) => {
+      // Delete related records first
+      await tx.moneyTransfer.deleteMany({
+        where: { merchantId: merchantId }
+      })
+
+      await tx.productTransfer.deleteMany({
+        where: { merchantId: merchantId }
+      })
+
+      // Delete order items and orders
+      const orders = await tx.order.findMany({
+        where: { merchantId: merchantId },
+        select: { id: true }
+      })
+
+      for (const order of orders) {
+        await tx.orderItem.deleteMany({
+          where: { orderId: order.id }
+        })
+        await tx.deliveryAttempt.deleteMany({
+          where: { orderId: order.id }
+        })
+        await tx.deliveryNote.deleteMany({
+          where: { orderId: order.id }
+        })
+        await tx.notification.deleteMany({
+          where: { orderId: order.id }
+        })
+      }
+
+      await tx.order.deleteMany({
+        where: { merchantId: merchantId }
+      })
+
+      // Delete products
+      await tx.product.deleteMany({
+        where: { merchantId: merchantId }
+      })
+
+      // Delete merchant
+      await tx.merchant.delete({
+        where: { id: merchantId }
+      })
+
+      // Delete user
+      await tx.user.delete({
+        where: { id: merchant.userId }
+      })
+    })
+
+    return { success: true, message: "تم حذف التاجر بنجاح" }
+  } catch (error) {
+    console.error("[v0] Error deleting merchant:", error)
+    return { success: false, error: "حدث خطأ أثناء حذف التاجر" }
   }
 }
 

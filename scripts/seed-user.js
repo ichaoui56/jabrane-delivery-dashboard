@@ -6,18 +6,25 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("[v0] Starting database seeding...");
 
-  // First, create default cities
-  console.log("[v0] Creating default cities...");
+  // First, create default cities with their delivery prices and times
+  console.log("[v0] Creating cities...");
   
-  const defaultCities = [
-    { name: "Dakhla", code: "DA", isActive: true },
-    { name: "Boujdour", code: "BO", isActive: true },
-    { name: "Laayoune", code: "LA", isActive: true }
+  const cities = [
+    { name: "السطات", code: "SET", isActive: true },
+    { name: "برشيد", code: "BER", isActive: true },
+    { name: "بن أحمد", code: "BEN", isActive: true },
+    { name: "سيدي حجاج", code: "SIH", isActive: true },
+    { name: "رأس العين", code: "RAS", isActive: true },
+    { name: "كيسر", code: "KIS", isActive: true },
+    { name: "بني اخلوك", code: "BENK", isActive: true },
+    { name: "البروج", code: "BRO", isActive: true },
+    { name: "اولاد اسعيد", code: "OUL", isActive: true },
+    { name: "سيدي العيدي", code: "SID", isActive: true }
   ];
 
   const createdCities = [];
   
-  for (const cityData of defaultCities) {
+  for (const cityData of cities) {
     const city = await prisma.city.upsert({
       where: { name: cityData.name },
       update: {},
@@ -28,7 +35,7 @@ async function main() {
       }
     });
     createdCities.push(city);
-    console.log(`[v0] Created city: ${city.name} (${city.code})`);
+    console.log(`[v0] Created city: ${city.name} (${city.code}) - Price: ${cityData.price} MAD, Delivery: ${cityData.deliveryTime}`);
   }
 
   const Admin_Hashed_Password = await bcrypt.hash("Admin@123", 10);
@@ -36,10 +43,10 @@ async function main() {
   const Delivery_Hashed_Password = await bcrypt.hash("Delivery@123", 10);
 
   const adminUser = await prisma.user.upsert({
-    where: { email: "admin@sonic-delivery.com" },
+    where: { email: "admin@jabrane-delivery.com" },
     update: {},
     create: {
-      email: "admin@sonic-delivery.com",
+      email: "admin@jabrane-delivery.com",
       name: "Administrateur Système",
       password: Admin_Hashed_Password,
       phone: "+212600000001",
@@ -53,23 +60,19 @@ async function main() {
     update: {},
     create: {
       userId: adminUser.id,
-      address: "Adresse principale, Dakhla", 
+      address: "Adresse principale, Settat", 
     },
   });
 
   console.log("[v0] Created admin user:", adminUser.email);
 
-  // Get city IDs for merchants
-  const dakhlaCity = createdCities.find(c => c.code === "DA");
-  const boujdourCity = createdCities.find(c => c.code === "BO");
-  const laayouneCity = createdCities.find(c => c.code === "LA");
-
-  const merchantDakhla = await prisma.user.upsert({
-    where: { email: "merchant.dakhla@sonic-delivery.com" },
+  // Create merchants for different cities
+  const merchantSettat = await prisma.user.upsert({
+    where: { email: "merchant.settat@jabrane-delivery.com" },
     update: {},
     create: {
-      email: "merchant.dakhla@sonic-delivery.com",
-      name: "Mohamed Commerçant",
+      email: "merchant.settat@jabrane-delivery.com",
+      name: "محمد التاجر",
       password: Merchant_Hashed_Password,
       phone: "+212600000002",
       role: Role.MERCHANT,
@@ -77,25 +80,25 @@ async function main() {
     },
   });
 
-  const merchantDataDakhla = await prisma.merchant.upsert({
-    where: { userId: merchantDakhla.id },
+  const merchantDataSettat = await prisma.merchant.upsert({
+    where: { userId: merchantSettat.id },
     update: {},
     create: {
-      userId: merchantDakhla.id,
-      companyName: "Magasin Dakhla",
+      userId: merchantSettat.id,
+      companyName: "متجر السطات",
       rib: "1234567890123456789012",
       bankName: "Banque Populaire",
       balance: 0,
-      baseFee: 20.0, // Base fee for Dakhla merchant
+      baseFee: 13.0, // Base fee matches city delivery price
     },
   });
 
-  const merchantBoujdour = await prisma.user.upsert({
-    where: { email: "merchant.boujdour@sonic-delivery.com" },
+  const merchantBerchid = await prisma.user.upsert({
+    where: { email: "merchant.berchid@jabrane-delivery.com" },
     update: {},
     create: {
-      email: "merchant.boujdour@sonic-delivery.com",
-      name: "Ahmed Boujdouri",
+      email: "merchant.berchid@jabrane-delivery.com",
+      name: "أحمد البرشيدي",
       password: Merchant_Hashed_Password,
       phone: "+212600000003",
       role: Role.MERCHANT,
@@ -103,25 +106,25 @@ async function main() {
     },
   });
 
-  const merchantDataBoujdour = await prisma.merchant.upsert({
-    where: { userId: merchantBoujdour.id },
+  const merchantDataBerchid = await prisma.merchant.upsert({
+    where: { userId: merchantBerchid.id },
     update: {},
     create: {
-      userId: merchantBoujdour.id,
-      companyName: "Magasin Boujdour",
+      userId: merchantBerchid.id,
+      companyName: "متجر برشيد",
       rib: "2234567890123456789012",
       bankName: "Banque Maroc",
       balance: 0,
-      baseFee: 25.0, // Base fee for Boujdour merchant
+      baseFee: 13.0,
     },
   });
 
-  const merchantLaayoune = await prisma.user.upsert({
-    where: { email: "merchant.laayoune@sonic-delivery.com" },
+  const merchantBenAhmed = await prisma.user.upsert({
+    where: { email: "merchant.benahmed@jabrane-delivery.com" },
     update: {},
     create: {
-      email: "merchant.laayoune@sonic-delivery.com",
-      name: "Abdallah Laayouni",
+      email: "merchant.benahmed@jabrane-delivery.com",
+      name: "عبدالله بن أحمد",
       password: Merchant_Hashed_Password,
       phone: "+212600000004",
       role: Role.MERCHANT,
@@ -129,27 +132,32 @@ async function main() {
     },
   });
 
-  const merchantDataLaayoune = await prisma.merchant.upsert({
-    where: { userId: merchantLaayoune.id },
+  const merchantDataBenAhmed = await prisma.merchant.upsert({
+    where: { userId: merchantBenAhmed.id },
     update: {},
     create: {
-      userId: merchantLaayoune.id,
-      companyName: "Magasin Laayoune",
+      userId: merchantBenAhmed.id,
+      companyName: "متجر بن أحمد",
       rib: "3234567890123456789012",
       bankName: "BMCE",
       balance: 0,
-      baseFee: 22.5, // Base fee for Laayoune merchant
+      baseFee: 18.0,
     },
   });
 
-  console.log("[v0] Created merchant users for all 3 cities");
+  console.log("[v0] Created merchant users for main cities");
 
-  const deliveryDakhla = await prisma.user.upsert({
-    where: { email: "delivery.dakhla@sonic-delivery.com" },
+  // Create delivery men for different cities
+  const settatCity = createdCities.find(c => c.code === "SET");
+  const berchidCity = createdCities.find(c => c.code === "BER");
+  const benAhmedCity = createdCities.find(c => c.code === "BEN");
+
+  const deliverySettat = await prisma.user.upsert({
+    where: { email: "delivery.settat@jabrane-delivery.com" },
     update: {},
     create: {
-      email: "delivery.dakhla@sonic-delivery.com",
-      name: "Youssef Chauffeur",
+      email: "delivery.settat@jabrane-delivery.com",
+      name: "يوسف السائق",
       password: Delivery_Hashed_Password,
       phone: "+212600000005",
       role: Role.DELIVERYMAN,
@@ -157,25 +165,25 @@ async function main() {
     },
   });
 
-  const deliveryManDakhla = await prisma.deliveryMan.upsert({
-    where: { userId: deliveryDakhla.id },
+  const deliveryManSettat = await prisma.deliveryMan.upsert({
+    where: { userId: deliverySettat.id },
     update: {},
     create: {
-      userId: deliveryDakhla.id,
-      cityId: dakhlaCity?.id, // Use cityId instead of city string
+      userId: deliverySettat.id,
+      cityId: settatCity?.id,
       vehicleType: "Moto",
       active: true,
       totalEarned: 0,
-      baseFee: 10.0,
+      baseFee: 6.5, // 50% of city delivery price
     },
   });
 
-  const deliveryBoujdour = await prisma.user.upsert({
-    where: { email: "delivery.boujdour@sonic-delivery.com" },
+  const deliveryBerchid = await prisma.user.upsert({
+    where: { email: "delivery.berchid@jabrane-delivery.com" },
     update: {},
     create: {
-      email: "delivery.boujdour@sonic-delivery.com",
-      name: "Ibrahim Distributeur",
+      email: "delivery.berchid@jabrane-delivery.com",
+      name: "إبراهيم الموزع",
       password: Delivery_Hashed_Password,
       phone: "+212600000006",
       role: Role.DELIVERYMAN,
@@ -183,25 +191,25 @@ async function main() {
     },
   });
 
-  const deliveryManBoujdour = await prisma.deliveryMan.upsert({
-    where: { userId: deliveryBoujdour.id },
+  const deliveryManBerchid = await prisma.deliveryMan.upsert({
+    where: { userId: deliveryBerchid.id },
     update: {},
     create: {
-      userId: deliveryBoujdour.id,
-      cityId: boujdourCity?.id, // Use cityId instead of city string
+      userId: deliveryBerchid.id,
+      cityId: berchidCity?.id,
       vehicleType: "Voiture",
       active: true,
       totalEarned: 0,
-      baseFee: 12.0,
+      baseFee: 6.5,
     },
   });
 
-  const deliveryLaayoune = await prisma.user.upsert({
-    where: { email: "delivery.laayoune@sonic-delivery.com" },
+  const deliveryBenAhmed = await prisma.user.upsert({
+    where: { email: "delivery.benahmed@jabrane-delivery.com" },
     update: {},
     create: {
-      email: "delivery.laayoune@sonic-delivery.com",
-      name: "Hassan Messager",
+      email: "delivery.benahmed@jabrane-delivery.com",
+      name: "حسن المراسل",
       password: Delivery_Hashed_Password,
       phone: "+212600000007",
       role: Role.DELIVERYMAN,
@@ -209,34 +217,41 @@ async function main() {
     },
   });
 
-  const deliveryManLaayoune = await prisma.deliveryMan.upsert({
-    where: { userId: deliveryLaayoune.id },
+  const deliveryManBenAhmed = await prisma.deliveryMan.upsert({
+    where: { userId: deliveryBenAhmed.id },
     update: {},
     create: {
-      userId: deliveryLaayoune.id,
-      cityId: laayouneCity?.id, // Use cityId instead of city string
+      userId: deliveryBenAhmed.id,
+      cityId: benAhmedCity?.id,
       vehicleType: "Moto",
       active: true,
       totalEarned: 0,
-      baseFee: 13.0,
+      baseFee: 9.0, // 50% of city delivery price (18 MAD)
     },
   });
 
-  console.log(
-    "[v0] Created delivery men users for all 3 cities with city assignments"
-  );
-
-  console.log("[v0] Created sample products");
+  console.log("[v0] Created delivery men users for main cities");
 
   console.log("[v0] ✅ Database seeding completed successfully!");
   console.log("[v0] Test credentials (all passwords: password123):");
-  console.log("[v0]   Admin: admin@sonic-delivery.com");
-  console.log("[v0]   Merchant Dakhla: merchant.dakhla@sonic-delivery.com");
-  console.log("[v0]   Merchant Boujdour: merchant.boujdour@sonic-delivery.com");
-  console.log("[v0]   Merchant Laayoune: merchant.laayoune@sonic-delivery.com");
-  console.log("[v0]   Delivery Dakhla: delivery.dakhla@sonic-delivery.com");
-  console.log("[v0]   Delivery Boujdour: delivery.boujdour@sonic-delivery.com");
-  console.log("[v0]   Delivery Laayoune: delivery.laayoune@sonic-delivery.com");
+  console.log("[v0]   Admin: admin@jabrane-delivery.com");
+  console.log("[v0]   Merchant Settat: merchant.settat@jabrane-delivery.com");
+  console.log("[v0]   Merchant Berchid: merchant.berchid@jabrane-delivery.com");
+  console.log("[v0]   Merchant Ben Ahmed: merchant.benahmed@jabrane-delivery.com");
+  console.log("[v0]   Delivery Settat: delivery.settat@jabrane-delivery.com");
+  console.log("[v0]   Delivery Berchid: delivery.berchid@jabrane-delivery.com");
+  console.log("[v0]   Delivery Ben Ahmed: delivery.benahmed@jabrane-delivery.com");
+  console.log("\n[v0] Cities created with prices:");
+  console.log("[v0]   السطات - 13 MAD - 24h max");
+  console.log("[v0]   برشيد - 13 MAD - 24h max");
+  console.log("[v0]   بن أحمد - 18 MAD - 24-48h");
+  console.log("[v0]   سيدي حجاج - 18 MAD - 24-48h");
+  console.log("[v0]   رأس العين - 18 MAD - 24-48h");
+  console.log("[v0]   كيسر - 18 MAD - 24-48h");
+  console.log("[v0]   بني اخلوك - 18 MAD - 24-48h");
+  console.log("[v0]   البروج - 18 MAD - 24-48h");
+  console.log("[v0]   اولاد اسعيد - 18 MAD - 24-48h");
+  console.log("[v0]   سيدي العيدي - 18 MAD - 24-48h");
 }
 
 main()

@@ -47,6 +47,15 @@ export function MerchantsClient({ initialMerchants }: { initialMerchants: Mercha
   const [merchants, setMerchants] = useState(initialMerchants)
   const router = useRouter()
 
+  const handleMerchantDeleted = (merchantId: number) => {
+    setMerchants(merchants.filter(m => m.id !== merchantId))
+  }
+
+  const handleMerchantCreated = (newMerchant: any) => {
+    console.log("New merchant created:", newMerchant)
+    setMerchants(prev => [newMerchant, ...prev])
+  }
+
   const filteredMerchants = merchants.filter((merchant) =>
     merchant.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     merchant.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -60,7 +69,7 @@ export function MerchantsClient({ initialMerchants }: { initialMerchants: Mercha
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">إدارة التجار</h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">عرض وإدارة جميع التجار</p>
         </div>
-        <CreateMerchantDialog onSuccess={(newMerchant) => setMerchants([newMerchant, ...merchants])}>
+        <CreateMerchantDialog onSuccess={handleMerchantCreated}>
           <Button className="bg-[#048dba] hover:bg-[#037299] w-full sm:w-auto text-sm">
             <Plus className="w-4 h-4 ml-2" />
             إضافة تاجر
@@ -135,7 +144,7 @@ export function MerchantsClient({ initialMerchants }: { initialMerchants: Mercha
                     <div className="hidden xs:flex gap-1 sm:gap-2 flex-shrink-0">
                       <EditMerchantDialog merchant={merchant} onSuccess={(updated) => {
                         setMerchants(merchants.map(m => m.id === updated.id ? updated : m))
-                      }}>
+                      }} onDelete={handleMerchantDeleted}>
                         <Button
                           size="sm"
                           variant="outline"
@@ -191,7 +200,7 @@ export function MerchantsClient({ initialMerchants }: { initialMerchants: Mercha
                   <div className="flex xs:hidden gap-2 pt-2 border-t">
                     <EditMerchantDialog merchant={merchant} onSuccess={(updated) => {
                       setMerchants(merchants.map(m => m.id === updated.id ? updated : m))
-                    }}>
+                    }} onDelete={handleMerchantDeleted}>
                       <Button
                         size="sm"
                         variant="outline"

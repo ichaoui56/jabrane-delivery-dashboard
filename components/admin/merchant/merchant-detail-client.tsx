@@ -81,6 +81,10 @@ export function MerchantDetailClient({ initialMerchant }: { initialMerchant: Mer
   const [merchant, setMerchant] = useState(initialMerchant)
   const router = useRouter()
 
+  const handleMerchantDeleted = (merchantId: number) => {
+    router.push('/admin/merchants')
+  }
+
   const stats = {
     totalProducts: merchant.products.length,
     activeProducts: merchant.products.filter(p => p.isActive).length,
@@ -164,6 +168,7 @@ export function MerchantDetailClient({ initialMerchant }: { initialMerchant: Mer
               <EditMerchantDialog 
                 merchant={merchant} 
                 onSuccess={(updated) => setMerchant({ ...merchant, ...updated })}
+                onDelete={handleMerchantDeleted}
               >
                 <Button 
                   variant="outline" 

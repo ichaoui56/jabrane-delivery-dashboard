@@ -51,7 +51,7 @@ export async function getMerchantSettings() {
       },
     }
   } catch (error) {
-    console.error("[v0] Error fetching merchant settings:", error)
+
     return { success: false, error: "حدث خطأ أثناء جلب البيانات" }
   }
 }
@@ -62,17 +62,17 @@ export async function updateUserProfile(data: {
   profileImage: string | null
 }) {
   try {
-    console.log("[v0] updateUserProfile called with data:", data)
+
     
     const session = await auth()
 
     if (!session?.user?.id) {
-      console.log("[v0] No session found")
+
       return { success: false, error: "غير مصرح. يرجى تسجيل الدخول." }
     }
 
     const userId = Number.parseInt(session.user.id)
-    console.log("[v0] Updating user ID:", userId)
+
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -81,12 +81,6 @@ export async function updateUserProfile(data: {
         phone: data.phone,
         image: data.profileImage,
       },
-    })
-
-    console.log("[v0] User updated successfully:", {
-      id: updatedUser.id,
-      name: updatedUser.name,
-      image: updatedUser.image,
     })
 
     return {
@@ -98,8 +92,8 @@ export async function updateUserProfile(data: {
       },
     }
   } catch (error) {
-    console.error("[v0] Error updating user profile:", error)
-    console.error("[v0] Error details:", error instanceof Error ? error.message : String(error))
+
+
     return { success: false, error: "حدث خطأ أثناء تحديث البيانات" }
   }
 }
@@ -147,7 +141,7 @@ export async function updateMerchantProfile(data: {
       },
     }
   } catch (error) {
-    console.error("[v0] Error updating merchant profile:", error)
+
     return { success: false, error: "حدث خطأ أثناء تحديث البيانات" }
   }
 }

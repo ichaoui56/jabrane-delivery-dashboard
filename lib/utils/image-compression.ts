@@ -1,5 +1,5 @@
 export async function compressImage(file: File, targetSizeKB = 200): Promise<File> {
-  console.log("[v0] Starting compression for file:", file.name, "Size:", (file.size / 1024).toFixed(2), "KB")
+
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -56,19 +56,6 @@ export async function compressImage(file: File, targetSizeKB = 200): Promise<Fil
           }
 
           const sizeKB = blob.size / 1024
-          console.log(
-            "[v0] Attempt",
-            attempts + 1,
-            "- Size:",
-            sizeKB.toFixed(2),
-            "KB, Quality:",
-            quality,
-            "Dimensions:",
-            width,
-            "x",
-            height,
-          )
-
           if (sizeKB <= targetSizeKB || attempts === maxAttempts - 1) {
             // Target reached or last attempt
             compressedFile = new File([blob], file.name.replace(/\.\w+$/, ".jpg"), {
@@ -102,8 +89,6 @@ export async function compressImage(file: File, targetSizeKB = 200): Promise<Fil
           return
         }
 
-        console.log("[v0] Compression complete. Final size:", (compressedFile.size / 1024).toFixed(2), "KB")
-        console.log("[v0] Reduction:", ((1 - compressedFile.size / file.size) * 100).toFixed(1), "%")
         resolve(compressedFile)
       }
 

@@ -402,7 +402,7 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
                   ),
                 };
 
-                const logoUrl = "/images/logo/logo.png";
+                const logoUrl = "/images/logo/blue-logo.png";
                 const result = await generateAndDownloadInvoice(
                   orderForPDF,
                   order.merchant?.user?.name || "—",
@@ -473,7 +473,7 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
                   ),
                 };
 
-                const logoUrl = "/images/logo/logo.png";
+                const logoUrl = "/images/logo/blue-logo.png";
                 const result = await viewInvoice(
                   orderForPDF,
                   order.merchant?.user?.name || "—",

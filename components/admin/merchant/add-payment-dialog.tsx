@@ -39,38 +39,38 @@ export function AddPaymentDialog({
     const file = e.target.files?.[0]
     if (!file) return
 
-    console.log("[v0] Starting invoice image upload for merchant:", merchantId)
-    console.log("[v0] File selected:", file.name, "Size:", (file.size / 1024).toFixed(2), "KB")
+
+
 
     setUploading(true)
     try {
-      console.log("[v0] Compressing image...")
+
       const compressed = await compressImage(file, 500)
-      console.log("[v0] Image compressed. New size:", (compressed.size / 1024).toFixed(2), "KB")
+
       
       const formData = new FormData()
       formData.append("file", compressed)
 
-      console.log("[v0] Uploading to Pinata via /api/files...")
+
       const response = await fetch("/api/files", {
         method: "POST",
         body: formData,
       })
 
-      console.log("[v0] Upload response status:", response.status)
+
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error("[v0] Upload failed with response:", errorText)
+
         throw new Error("فشل رفع الصورة")
       }
 
       const url = await response.json()
-      console.log("[v0] Invoice uploaded successfully. URL:", url)
+
       setInvoiceImage(url)
       setMessage({ type: "success", text: "تم رفع الفاتورة بنجاح" })
     } catch (error) {
-      console.error("[v0] Error uploading invoice:", error)
+
       setMessage({ type: "error", text: "فشل رفع الفاتورة" })
     } finally {
       setUploading(false)
@@ -82,14 +82,8 @@ export function AddPaymentDialog({
     setIsLoading(true)
     setMessage(null)
 
-    console.log("[v0] Submitting payment with data:", {
-      merchantId,
-      amount: parseFloat(amount),
-      reference: reference || null,
-      note: note || null,
-      invoiceImage: invoiceImage,
-    })
 
+   
     const result = await addMoneyTransfer(merchantId, {
       amount: parseFloat(amount),
       reference: reference || null,
@@ -97,7 +91,7 @@ export function AddPaymentDialog({
       invoiceImage: invoiceImage,
     })
 
-    console.log("[v0] Payment submission result:", result)
+
 
     if (result.success) {
       setMessage({ type: "success", text: "تمت إضافة الدفعة بنجاح" })

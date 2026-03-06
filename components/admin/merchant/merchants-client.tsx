@@ -52,7 +52,6 @@ export function MerchantsClient({ initialMerchants }: { initialMerchants: Mercha
   }
 
   const handleMerchantCreated = (newMerchant: any) => {
-    console.log("New merchant created:", newMerchant)
     setMerchants(prev => [newMerchant, ...prev])
   }
 

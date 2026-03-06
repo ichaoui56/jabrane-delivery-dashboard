@@ -58,9 +58,9 @@ export function CreateMerchantDialog({
 
     if (result.success) {
       setMessage({ type: "success", text: "تم إنشاء التاجر بنجاح" })
-      console.log("Create merchant result:", result)
+      
       if (onSuccess && result.data) {
-        console.log("Calling onSuccess with:", result.data)
+        
         onSuccess(result.data)
       }
       setTimeout(() => {

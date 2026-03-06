@@ -77,7 +77,7 @@ export function CreateTransferForm() {
     const cachedProducts = clientCache.get<Product[]>(cacheKey)
 
     if (cachedProducts) {
-      console.log("[v0] Loading products from cache")
+      
       setProducts(cachedProducts)
       return
     }
@@ -110,10 +110,10 @@ export function CreateTransferForm() {
 
     setUploadingImage(true)
     try {
-      console.log("[v0] Original file size:", (file.size / 1024).toFixed(2), "KB")
+      
 
       const compressedFile = await compressImage(file, 200)
-      console.log("[v0] Compressed file size:", (compressedFile.size / 1024).toFixed(2), "KB")
+      
 
       const formData = new FormData()
       formData.set("file", compressedFile)
@@ -126,7 +126,7 @@ export function CreateTransferForm() {
       if (!response.ok) throw new Error("Upload failed")
 
       const url = await response.json()
-      console.log("[v0] Upload successful, URL:", url)
+      
       setNewProductImage(url)
       toast({
         title: "تم رفع الصورة",
@@ -134,7 +134,7 @@ export function CreateTransferForm() {
         variant: "default",
       })
     } catch (error) {
-      console.error("[v0] Image upload error:", error)
+      
       toast({
         title: "خطأ",
         description: "فشل في رفع الصورة",

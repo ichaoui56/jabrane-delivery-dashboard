@@ -45,7 +45,7 @@ export async function getMerchants() {
 
     return { success: true, data: merchants }
   } catch (error) {
-    console.error("[v0] Error fetching merchants:", error)
+    
     return { success: false, error: "حدث خطأ أثناء جلب البيانات" }
   }
 }
@@ -441,16 +441,16 @@ export async function addMoneyTransfer(merchantId: number, data: {
   invoiceImage: string | null
 }) {
   try {
-    console.log("[v0] addMoneyTransfer called with:", { merchantId, data })
+    
     
     const session = await auth()
     if (!session?.user || session.user.role !== "ADMIN") {
-      console.log("[v0] Unauthorized: User role is", session?.user?.role)
+      
       return { success: false, error: "غير مصرح" }
     }
 
     const transfer = await prisma.$transaction(async (tx:any) => {
-      console.log("[v0] Creating money transfer in database...")
+      
       const moneyTransfer = await tx.moneyTransfer.create({
         data: {
           merchantId,
@@ -460,9 +460,9 @@ export async function addMoneyTransfer(merchantId: number, data: {
           invoiceImage: data.invoiceImage,
         },
       })
-      console.log("[v0] Money transfer created:", moneyTransfer)
+      
 
-      console.log("[v0] Updating merchant balance...")
+      
       await tx.merchant.update({
         where: { id: merchantId },
         data: {
@@ -471,15 +471,15 @@ export async function addMoneyTransfer(merchantId: number, data: {
           },
         },
       })
-      console.log("[v0] Merchant balance updated")
+      
 
       return moneyTransfer
     })
 
-    console.log("[v0] Transaction completed successfully")
+    
     return { success: true, data: transfer }
   } catch (error) {
-    console.error("[v0] Error adding money transfer:", error)
+    
     return { success: false, error: "حدث خطأ أثناء إضافة الدفعة" }
   }
 }

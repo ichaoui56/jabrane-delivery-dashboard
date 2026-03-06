@@ -12,7 +12,7 @@ export default async function LoginPage() {
 
   if (session?.user) {
     const userRole = session.user.role
-    
+
     if (userRole === "ADMIN") {
       redirect("/admin/dashboard")
     } else if (userRole === "DELIVERYMAN") {
@@ -30,13 +30,7 @@ export default async function LoginPage() {
       <div className="hidden md:flex w-1/2 flex-col justify-between bg-gradient-to-br from-[#048dba] to-[#0570a1] p-12 text-white">
         {/* Logo and Company Name at Top */}
         <div className="flex items-center justify-start gap-3">
-          <div className="rounded-full bg-white border-2 border-white p-2">
-            <img src="images/logo/logo.png" className="w-12 h-12" alt="" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Jabrane Delivery</h1>
-            <p className="text-sm opacity-90">خدمة التوصيل الموثوقة</p>
-          </div>
+          <img src="images/logo/logo.png" className="w-fit h-20" alt="" />
         </div>
 
         {/* Center Content */}

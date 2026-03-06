@@ -458,11 +458,7 @@ export function DashboardLayout({
           <div className="p-6 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
-                <img src="/images/logo/logo.png" alt="" className="w-12 h-12" />
-              </div>
-              <div>
-                <div className="font-bold text-xl">Jabrane Delivery</div>
-                <div className="text-xs text-gray-500">DELIVERY SERVICES</div>
+                <img src="/images/logo/blue-logo.png" alt="" className="w-52 h-20" />
               </div>
             </div>
           </div>

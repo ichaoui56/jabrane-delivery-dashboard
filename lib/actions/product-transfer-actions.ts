@@ -93,7 +93,7 @@ export async function createProductTransfer(input: CreateProductTransferInput) {
       message: `تم إنشاء الشحنة بنجاح - رقم التتبع: ${transferCode}`,
     }
   } catch (error) {
-    console.error("Error creating product transfer:", error)
+    
     return { success: false, error: "فشل في إنشاء الشحنة" }
   }
 }
@@ -136,7 +136,7 @@ export async function createProduct(data: {
 
     return { success: true, data: product }
   } catch (error) {
-    console.error("Error creating product:", error)
+    
     return { success: false, error: "فشل في إنشاء المنتج" }
   }
 }
@@ -174,7 +174,7 @@ export const getMerchantProducts = cache(async () => {
 
     return { success: true, data: products };
   } catch (error) {
-    console.error('Error fetching products:', error);
+    
     return { success: false, error: 'فشل في جلب المنتجات' };
   }
 });
@@ -228,7 +228,7 @@ export const getMerchantTransfers = cache(async () => {
 
     return { success: true, data: transfers }
   } catch (error) {
-    console.error("Error fetching transfers:", error)
+    
     return { success: false, error: "فشل في جلب الشحنات" }
   }
 })
@@ -238,16 +238,16 @@ export async function updateTransferStatus(
   newStatus: "PENDING" | "IN_TRANSIT" | "DELIVERED_TO_WAREHOUSE" | "CANCELLED",
 ) {
   try {
-    console.log("[v0] Starting updateTransferStatus:", { transferId, newStatus })
+    
 
     const session = await auth()
 
     if (!session?.user) {
-      console.log("[v0] No session found")
+      
       return { success: false, error: "غير مصرح" }
     }
 
-    console.log("[v0] User session:", { userId: session.user.id, role: session.user.role })
+    
 
     // Get transfer with items and merchant
     const transfer = await prisma.productTransfer.findUnique({
@@ -267,38 +267,32 @@ export async function updateTransferStatus(
     })
 
     if (!transfer) {
-      console.log("[v0] Transfer not found")
+      
       return { success: false, error: "الشحنة غير موجودة" }
     }
 
-    console.log("[v0] Transfer found:", {
-      transferCode: transfer.transferCode,
-      currentStatus: transfer.status,
-      merchantId: transfer.merchantId,
-      merchantUserId: transfer.merchant.userId,
-      itemsCount: transfer.transferItems.length,
-    })
+
 
     // Check authorization
     const isAdmin = session.user.role === "ADMIN"
     const isMerchantOwner =
       session.user.role === "MERCHANT" && transfer.merchant.userId === Number.parseInt(session.user.id)
 
-    console.log("[v0] Authorization check:", { isAdmin, isMerchantOwner })
+    
 
     if (!isAdmin && !isMerchantOwner) {
-      console.log("[v0] User not authorized")
+      
       return { success: false, error: "غير مصرح بتحديث هذه الشحنة" }
     }
 
     // Prevent updating from final states
     if (transfer.status === "DELIVERED_TO_WAREHOUSE" || transfer.status === "CANCELLED") {
-      console.log("[v0] Transfer already in final state")
+      
       return { success: false, error: "لا يمكن تحديث شحنة تم تسليمها أو إلغاؤه" }
     }
 
     // Start transaction
-    console.log("[v0] Starting transaction...")
+    
     const result = await prisma.$transaction(async (tx) => {
       // Update transfer status
       const updatedTransfer = await tx.productTransfer.update({
@@ -318,20 +312,14 @@ export async function updateTransferStatus(
         },
       })
 
-      console.log("[v0] Transfer status updated successfully to:", newStatus)
+      
 
       // Update stock if delivered
       if (newStatus === "DELIVERED_TO_WAREHOUSE") {
-        console.log("[v0] Updating stock for", transfer.transferItems.length, "items...")
+        
 
         for (const item of transfer.transferItems) {
-          console.log("[v0] Processing item:", {
-            productId: item.productId,
-            productName: item.product.name,
-            quantity: item.quantity,
-            currentStock: item.product.stockQuantity,
-            currentDelivered: item.product.deliveredCount,
-          })
+
 
           const updatedProduct = await tx.product.update({
             where: { id: item.productId },
@@ -345,27 +333,22 @@ export async function updateTransferStatus(
             },
           })
 
-          console.log("[v0] Product updated successfully:", {
-            productId: item.productId,
-            productName: item.product.name,
-            addedQuantity: item.quantity,
-            newStockQuantity: updatedProduct.stockQuantity,
-            newDeliveredCount: updatedProduct.deliveredCount,
-          })
+          
+          
         }
 
-        console.log("[v0] All products updated successfully")
+        
       }
 
       return updatedTransfer
     })
 
-    console.log("[v0] Transaction completed successfully")
+    
 
     // Revalidate caches
     revalidateTag(`merchant-transfers-${transfer.merchantId}`)
     revalidateTag(`merchant-products-${transfer.merchantId}`)
-    console.log("[v0] Cache revalidated")
+    
 
     const statusMessages = {
       PENDING: "معلق",
@@ -380,12 +363,9 @@ export async function updateTransferStatus(
       message: `تم تحديث حالة الشحنة إلى: ${statusMessages[newStatus]}${newStatus === "DELIVERED_TO_WAREHOUSE" ? " وتم تحديث المخزون تلقائياً" : ""}`,
     }
   } catch (error) {
-    console.error("[v0] Error in updateTransferStatus:", error)
-    console.error("[v0] Error details:", {
-      name: error instanceof Error ? error.name : "Unknown",
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    })
+    
+    
+     
     return { success: false, error: "فشل في تحديث حالة الشحنة" }
   }
 }
@@ -441,7 +421,7 @@ export async function getProductDetails(productId: number) {
 
     return { success: true, data: product }
   } catch (error) {
-    console.error("Error fetching product details:", error)
+    
     return { success: false, error: "فشل في جلب تفاصيل المنتج" }
   }
 }
@@ -500,7 +480,7 @@ export const getInventoryStats = cache(async () => {
       },
     }
   } catch (error) {
-    console.error("Error fetching inventory stats:", error)
+    
     return { success: false, error: "فشل في جلب إحصائيات المخزون" }
   }
 })
@@ -596,7 +576,7 @@ export async function updateProductInfo(
       message: "تم تحديث المنتج بنجاح" 
     }
   } catch (error) {
-    console.error("Error updating product:", error)
+    
     return { success: false, error: "فشل في تحديث المنتج" }
   }
 }
@@ -665,7 +645,7 @@ export async function deleteProductTransfer(transferId: number) {
       message: "تم حذف الشحنة بنجاح",
     }
   } catch (error) {
-    console.error("Error deleting product transfer:", error)
+    
     return { success: false, error: "فشل في حذف الشحنة" }
   }
 }
@@ -783,7 +763,7 @@ export async function updateProductTransfer(
       message: "تم تحديث الشحنة بنجاح",
     }
   } catch (error) {
-    console.error("Error updating product transfer:", error)
+    
     return { success: false, error: "فشل في تحديث الشحنة" }
   }
 }
@@ -821,7 +801,7 @@ export const getMerchantProductsForTransfer = cache(async () => {
 
     return { success: true, data: products }
   } catch (error) {
-    console.error("Error fetching products:", error)
+    
     return { success: false, error: "فشل في جلب المنتجات" }
   }
 })
@@ -882,7 +862,7 @@ export const debugProductStock = cache(async () => {
       }
     }
   } catch (error) {
-    console.error("Error debugging product stock:", error)
+    
     return { success: false, error: "فشل في فحص المخزون" }
   }
 })
@@ -980,7 +960,7 @@ export const getDeliveredOrdersDetails = cache(async () => {
       }
     }
   } catch (error) {
-    console.error("Error fetching delivered orders details:", error)
+    
     return { success: false, error: "فشل في جلب تفاصيل الطلبات المسلمة" }
   }
 })

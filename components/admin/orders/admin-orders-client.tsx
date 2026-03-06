@@ -242,8 +242,8 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
 
   // Handle PDF generation
   const handleGeneratePDF = async (order: Order) => {
-    console.log('Order merchant object:', order.merchant);
-    console.log('Order merchant user object:', order.merchant?.user);
+    
+    
 
     setGeneratingPdfOrderId(order.id)
     try {
@@ -266,7 +266,7 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
         }))
       }
 
-      const logoUrl = '/images/logo/logo.png'
+      const logoUrl = '/images/logo/blue-logo.png'
       const result = await generateAndDownloadInvoice(
         orderForPDF,
         order.merchant?.user?.name || "—",

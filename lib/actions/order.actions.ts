@@ -165,7 +165,7 @@ export const getMerchantOrders = cache(async (
       limit,
     }
   } catch (error) {
-    console.error('[v0] Error fetching orders:', error)
+    
     return { data: [], total: 0, page: 1, totalPages: 0, limit: 20 }
   }
 })
@@ -215,7 +215,7 @@ export const getOrderWithHistory = cache(async (orderId: number) => {
 
     return order
   } catch (error) {
-    console.error('[v0] Error fetching order with history:', error)
+    
     return null
   }
 })
@@ -252,7 +252,7 @@ export const getMerchantProducts = cache(async () => {
 
     return products
   } catch (error) {
-    console.error("[v0] Error fetching products:", error)
+    
     return []
   }
 })
@@ -323,10 +323,6 @@ export async function createOrder(data: {
     const merchantBaseFee = merchant.baseFee || 25
     const merchantEarning = data.totalPrice - merchantBaseFee
 
-    console.log(
-      `[v0] Order ${orderCode} - City: ${city.name} (${cityCode}) - Total: ${data.totalPrice}, Merchant Earning: ${merchantEarning}`,
-    )
-
     // Validate products and stock
     for (const item of data.items) {
       const product = await prisma.product.findUnique({
@@ -394,12 +390,12 @@ export async function createOrder(data: {
       },
     })
 
-    console.log("[v0] Order created successfully:", orderCode)
+    
 
     revalidatePath("/merchant/orders")
     return { success: true, message: "تم إنشاء الطلب بنجاح", orderCode }
   } catch (error) {
-    console.error("[v0] Error creating order:", error)
+    
     return { success: false, message: "فشل في إنشاء الطلب" }
   }
 }
@@ -476,7 +472,7 @@ export async function updateMerchantOrder(
     revalidatePath("/merchant/orders")
     return { success: true, message: "تم تعديل الطلب بنجاح" }
   } catch (error) {
-    console.error("[v0] Error updating merchant order:", error)
+    
     return { success: false, message: "فشل في تعديل الطلب" }
   }
 }
@@ -533,7 +529,7 @@ export async function deleteMerchantOrder(orderId: number) {
     revalidatePath("/merchant/orders")
     return { success: true, message: "تم حذف الطلب بنجاح" }
   } catch (error) {
-    console.error("[v0] Error deleting merchant order:", error)
+    
     return { success: false, message: "فشل في حذف الطلب" }
   }
 }
@@ -874,7 +870,7 @@ export async function updateOrderStatus(orderId: number, newStatus: OrderStatus,
         : "تم تحديث حالة الطلب"
     }
   } catch (error) {
-    console.error("[v0] Error updating order status:", error)
+    
     return { success: false, message: "فشل في تحديث حالة الطلب" }
   }
 }
@@ -893,11 +889,11 @@ export async function getDeliveryManOrders() {
     })
 
     if (!deliveryMan) {
-      console.log("[v0] No delivery man profile found")
+      
       return []
     }
 
-    console.log(`[v0] Delivery man city: ${deliveryMan.city?.name}`)
+    
 
     // Get orders in the delivery man's city that are either assigned to them or available
     const orders = await prisma.order.findMany({
@@ -949,7 +945,7 @@ export async function getDeliveryManOrders() {
       orderBy: { createdAt: "desc" },
     })
 
-    console.log(`[v0] Found ${orders.length} orders for delivery man in city: ${deliveryMan.city?.name}`)
+    
 
     // Transform orders to include city name for backward compatibility
     const transformedOrders = orders.map(order => ({
@@ -959,7 +955,7 @@ export async function getDeliveryManOrders() {
 
     return transformedOrders
   } catch (error) {
-    console.error("[v0] Error fetching delivery orders:", error)
+    
     return []
   }
 }
@@ -1065,7 +1061,7 @@ export async function acceptOrder(orderId: number) {
     revalidatePath("/merchant/orders")
     return { success: true, message: "تم قبول الطلب بنجاح" }
   } catch (error) {
-    console.error("[v0] Error accepting order:", error)
+    
     return { success: false, message: "فشل في قبول الطلب" }
   }
 }
@@ -1141,7 +1137,7 @@ export async function rejectOrder(orderId: number, reason: string) {
     revalidatePath("/merchant/orders")
     return { success: true, message: "تم رفض الطلب" }
   } catch (error) {
-    console.error("[v0] Error rejecting order:", error)
+    
     return { success: false, message: "فشل في رفض الطلب" }
   }
 }
@@ -1207,7 +1203,7 @@ export async function adminAcceptOrder(orderId: number) {
     revalidatePath("/merchant/orders")
     return { success: true, message: "تم قبول الطلب بنجاح" }
   } catch (error) {
-    console.error("[v0] Error accepting order as admin:", error)
+    
     return { success: false, message: "فشل في قبول الطلب" }
   }
 }
@@ -1302,7 +1298,7 @@ export async function recordDeliveryAttempt(
         : "تم تسجيل محاولة التوصيل"
     }
   } catch (error) {
-    console.error("[v0] Error recording delivery attempt:", error)
+    
     return { success: false, message: "فشل في تسجيل محاولة التوصيل" }
   }
 }
@@ -1373,7 +1369,7 @@ export async function getOrderStats() {
       merchantEarnings: totalRevenue._sum.merchantEarning || 0,
     }
   } catch (error) {
-    console.error("[v0] Error fetching order stats:", error)
+    
     return null
   }
 }
@@ -1398,7 +1394,7 @@ export async function getAvailableCitiesForMerchant() {
 
     return cities
   } catch (error) {
-    console.error("[v0] Error fetching available cities:", error)
+    
     return []
   }
 }
@@ -1450,7 +1446,7 @@ export async function getOrdersByCity(cityId?: number) {
 
     return { success: true, data: orders }
   } catch (error) {
-    console.error("[v0] Error fetching orders by city:", error)
+    
     return { success: false, error: "فشل في جلب الطلبات" }
   }
 }
@@ -1490,7 +1486,7 @@ export async function getCityOrderStats() {
 
     return { success: true, data: cities }
   } catch (error) {
-    console.error("[v0] Error fetching city order stats:", error)
+    
     return { success: false, error: "فشل في جلب إحصائيات المدن" }
   }
 }

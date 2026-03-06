@@ -106,8 +106,7 @@ export function InventoryTable({ products }: { products: Product[] }) {
   const hasActiveFilters = searchTerm !== "" || stockFilter !== "ALL" || sortBy !== "name"
 
   const handleEditProduct = (product: Product) => {
-    console.log("[v0] Opening edit modal for product:", product)
-    console.log("[v0] Product lowStockAlert:", product.lowStockAlert)
+    
     setEditingProduct(product)
     setIsEditModalOpen(true)
   }

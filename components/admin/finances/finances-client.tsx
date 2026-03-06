@@ -235,14 +235,7 @@ export function FinancesClient({ initialData }: { initialData: FinancialData | n
             <CardContent>
               <div className="space-y-3">
                 {filteredTransactions.map((transaction) => {
-                  // Determine user type based on transaction type
-                  console.log('Transaction:', {
-                    id: transaction.id,
-                    type: transaction.type,
-                    typeLabel: transactionTypeLabels[transaction.type],
-                    userType: transaction.relatedUser.type,
-                    userName: transaction.relatedUser.name
-                  })
+                  
                   const getUserType = (type:any) => {
                     switch (type) {
                       case "MERCHANT_PAYMENT": return "تاجر"

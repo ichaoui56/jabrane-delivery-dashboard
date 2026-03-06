@@ -53,7 +53,7 @@ export function EditProductModal({ product, open, onClose, onSuccess, isAdmin = 
 
   useEffect(() => {
     if (product && open) {
-      console.log("[EditProductModal] Product data received:", product)
+      
       
       const lowStockValue = product.lowStockAlert ?? 3
       const stockQuantityValue = product.stockQuantity ?? 0

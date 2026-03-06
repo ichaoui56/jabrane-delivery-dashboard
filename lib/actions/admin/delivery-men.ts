@@ -52,7 +52,6 @@ export async function getDeliveryMen() {
 
     return { success: true, data: transformedDeliveryMen }
   } catch (error) {
-    console.error("[v0] Error fetching delivery men:", error)
     return { success: false, error: "حدث خطأ أثناء جلب البيانات" }
   }
 }
@@ -109,7 +108,6 @@ export async function getDeliveryManById(id: number) {
 
     return { success: true, data: transformedDeliveryMan }
   } catch (error) {
-    console.error("[v0] Error fetching delivery man:", error)
     return { success: false, error: "حدث خطأ أثناء جلب البيانات" }
   }
 }
@@ -205,7 +203,6 @@ export async function createDeliveryMan(data: {
 
     return { success: true, data: transformedDeliveryMan }
   } catch (error) {
-    console.error("[v0] Error creating delivery man:", error)
     if (error instanceof Error && error.message.includes("Unique constraint")) {
       return { success: false, error: "البريد الإلكتروني مستخدم بالفعل" }
     }
@@ -319,7 +316,6 @@ export async function updateDeliveryMan(deliveryManId: number, data: {
 
     return { success: true, data: transformedDeliveryMan }
   } catch (error) {
-    console.error("[v0] Error updating delivery man:", error)
     if (error instanceof Error && error.message.includes("Unique constraint")) {
       return { success: false, error: "البريد الإلكتروني مستخدم بالفعل" }
     }
@@ -389,7 +385,6 @@ export async function getDeliveryManDetails(deliveryManId: number) {
 
     return { success: true, data: transformedDeliveryMan }
   } catch (error) {
-    console.error("[v0] Error fetching delivery man details:", error)
     return { success: false, error: "حدث خطأ أثناء جلب البيانات" }
   }
 }
@@ -406,10 +401,8 @@ export async function addDeliveryManPayment(deliveryManId: number, data: {
       return { success: false, error: "غير مصرح" }
     }
 
-    console.log("[v0] Adding delivery man payment:", { deliveryManId, data })
 
     const transfer = await prisma.$transaction(async (tx) => {
-      console.log("[v0] Creating money transfer in database...")
       const moneyTransfer = await tx.moneyTransfer.create({
         data: {
           deliveryManId: deliveryManId,
@@ -419,9 +412,7 @@ export async function addDeliveryManPayment(deliveryManId: number, data: {
           invoiceImage: data.invoiceImage,
         },
       })
-      console.log("[v0] Money transfer created:", moneyTransfer)
 
-      console.log("[v0] Updating delivery man totalEarned...")
       await tx.deliveryMan.update({
         where: { id: deliveryManId },
         data: {
@@ -430,15 +421,12 @@ export async function addDeliveryManPayment(deliveryManId: number, data: {
           },
         },
       })
-      console.log("[v0] Delivery man totalEarned updated")
 
       return moneyTransfer
     })
 
-    console.log("[v0] Delivery man payment added successfully")
     return { success: true, data: transfer }
   } catch (error) {
-    console.error("[v0] Error adding delivery man payment:", error)
     return { success: false, error: "حدث خطأ أثناء إضافة الدفعة" }
   }
 }
@@ -647,7 +635,6 @@ export async function getDeliveryManDetail(id: number) {
 
     return { success: true, data: transformedDeliveryMan }
   } catch (error) {
-    console.error("[v0] Error fetching delivery man detail:", error)
     return { success: false, error: "حدث خطأ أثناء جلب البيانات" }
   }
 }
@@ -680,7 +667,6 @@ export async function getDeliveryMenStats() {
 
     return { success: true, data: stats }
   } catch (error) {
-    console.error("[v0] Error fetching delivery men stats:", error)
     return { success: false, error: "حدث خطأ أثناء جلب الإحصائيات" }
   }
 }
@@ -771,7 +757,6 @@ export async function markOrderAsDelivered(orderId: number, deliveryManId: numbe
       message: "تم تأكيد تسليم الطلب بنجاح"
     }
   } catch (error) {
-    console.error("Error marking order as delivered:", error)
     return { success: false, error: "حدث خطأ أثناء تحديث حالة الطلب" }
   }
 }
@@ -821,7 +806,6 @@ export async function collectCODFromDeliveryMan(deliveryManId: number, amount: n
 
     return { success: true, data: result }
   } catch (error) {
-    console.error("Error collecting COD:", error)
     return { success: false, error: "حدث خطأ أثناء تحصيل الدفع" }
   }
 }
@@ -885,7 +869,6 @@ export async function deleteDeliveryMan(deliveryManId: number) {
 
     return { success: true, message: "تم حذف موظف التوصيل بنجاح" }
   } catch (error) {
-    console.error("[v0] Error deleting delivery man:", error)
     return { success: false, error: "حدث خطأ أثناء حذف موظف التوصيل" }
   }
 }
@@ -935,7 +918,6 @@ export async function payDeliveryManEarnings(deliveryManId: number, amount: numb
 
     return { success: true, data: result }
   } catch (error) {
-    console.error("Error paying delivery man earnings:", error)
     return { success: false, error: "حدث خطأ أثناء دفع الأرباح" }
   }
 }

@@ -62,7 +62,7 @@ export function CreateDeliveryManDialog({
       setLoadingCities(true)
       try {
         const citiesData = await getActiveCities()
-        console.log("Cities data loaded in dialog:", citiesData) // Debug log
+       
         setCities(citiesData)
       } catch (error) {
         console.error("Error loading cities:", error)

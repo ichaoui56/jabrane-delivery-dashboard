@@ -137,9 +137,7 @@ export async function signInAction(prevState: FormState | null, formData: FormDa
       redirectUrl = "/merchant/dashboard"
     }
     
-    console.log("[v0] redirectUrl", redirectUrl)
-    console.log("[v0] userRole", userRole)
-    
+ 
     return {
       success: true,
       message: "تم تسجيل الدخول بنجاح!",

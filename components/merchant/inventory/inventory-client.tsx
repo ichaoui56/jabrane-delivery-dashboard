@@ -25,7 +25,6 @@ export function InventoryClient({
 }) {
   const products = initialProducts
   const stats = initialStats
-  console.log("stats",stats)
 
   return (
     <div className="space-y-4 md:space-y-6">

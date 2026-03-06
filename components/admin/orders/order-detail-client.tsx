@@ -94,16 +94,14 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
     events.push({
       type: "CREATION",
       title: "إنشاء الطلب",
-      description: `تم إنشاء الطلب من قبل التاجر ${
-        order.merchant?.user?.name || ""
-      }`,
+      description: `تم إنشاء الطلب من قبل التاجر ${order.merchant?.user?.name || ""
+        }`,
       timestamp: order.createdAt,
       icon: ShoppingCart,
       iconColor: "text-green-600",
       bgColor: "bg-green-100",
-      details: `تم إنشاء الطلب #${order.orderCode} بواسطة التاجر ${
-        order.merchant?.user?.name || ""
-      }`,
+      details: `تم إنشاء الطلب #${order.orderCode} بواسطة التاجر ${order.merchant?.user?.name || ""
+        }`,
       sortOrder: 0,
     });
 
@@ -139,9 +137,8 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
       events.push({
         type: "DELIVERY_ACCEPTANCE",
         title: "قبول الطلب من قبل عامل التوصيل",
-        description: `تم قبول الطلب بواسطة عامل التوصيل ${
-          order.deliveryMan?.user?.name || ""
-        }`,
+        description: `تم قبول الطلب بواسطة عامل التوصيل ${order.deliveryMan?.user?.name || ""
+          }`,
         timestamp: deliveryAcceptance?.attemptedAt || order.updatedAt,
         icon: UserCheck,
         iconColor: "text-purple-600",
@@ -181,9 +178,8 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
           description = `سبب: ${attempt.reason || "غير محدد"}`;
           iconColor = "text-red-600";
           bgColor = "bg-red-100";
-          details = `محاولة ${index + 1}: ${
-            attempt.notes || "لا توجد ملاحظات"
-          }`;
+          details = `محاولة ${index + 1}: ${attempt.notes || "لا توجد ملاحظات"
+            }`;
         } else if (attemptStatus === "CUSTOMER_NOT_AVAILABLE") {
           title = "العميل غير متاح";
           description = "العميل غير متاح في وقت التسليم";
@@ -354,9 +350,8 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
                 الطلب #{order.orderCode}
               </h1>
               <Badge
-                className={`${
-                  statusColors[order.status]
-                } border-0 text-sm font-medium px-3 py-1`}
+                className={`${statusColors[order.status]
+                  } border-0 text-sm font-medium px-3 py-1`}
               >
                 {statusLabels[order.status]}
               </Badge>
@@ -377,12 +372,13 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
             onClick={async () => {
               setGeneratingPdf(true);
               try {
+                // In both generateAndDownloadInvoice and viewInvoice calls, update the city:
                 const orderForPDF = {
                   orderCode: order.orderCode,
                   customerName: order.customerName,
                   customerPhone: order.customerPhone,
                   address: order.address,
-                  city: order.city,
+                  city: order.city?.name || order.city, // Update this line
                   note: order.note || "",
                   totalPrice: order.totalPrice,
                   paymentMethod: order.paymentMethod,
@@ -448,12 +444,13 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
             onClick={async () => {
               setViewingPdf(true);
               try {
+                // In both generateAndDownloadInvoice and viewInvoice calls, update the city:
                 const orderForPDF = {
                   orderCode: order.orderCode,
                   customerName: order.customerName,
                   customerPhone: order.customerPhone,
                   address: order.address,
-                  city: order.city,
+                  city: order.city?.name || order.city, // Update this line
                   note: order.note || "",
                   totalPrice: order.totalPrice,
                   paymentMethod: order.paymentMethod,
@@ -553,20 +550,18 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
               (step, index) => (
                 <div key={index} className="flex flex-col items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 text-sm font-bold transition-all duration-300 ${
-                      index + 1 <= progress.currentStep
-                        ? "bg-[#048dba] text-white shadow-lg scale-110"
-                        : "bg-gray-200 text-gray-400"
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 text-sm font-bold transition-all duration-300 ${index + 1 <= progress.currentStep
+                      ? "bg-[#048dba] text-white shadow-lg scale-110"
+                      : "bg-gray-200 text-gray-400"
+                      }`}
                   >
                     {index + 1}
                   </div>
                   <span
-                    className={`text-xs font-medium text-center leading-tight ${
-                      index + 1 <= progress.currentStep
-                        ? "text-[#048dba] font-semibold"
-                        : "text-gray-500"
-                    }`}
+                    className={`text-xs font-medium text-center leading-tight ${index + 1 <= progress.currentStep
+                      ? "text-[#048dba] font-semibold"
+                      : "text-gray-500"
+                      }`}
                   >
                     {step}
                   </span>
@@ -626,11 +621,10 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
                 {filteredDeliveryNotes.map((note: any) => (
                   <div
                     key={note.id}
-                    className={`p-4 rounded-lg border ${
-                      note.isPrivate
-                        ? "bg-red-50 border-red-100"
-                        : "bg-gray-50 border-gray-200"
-                    }`}
+                    className={`p-4 rounded-lg border ${note.isPrivate
+                      ? "bg-red-50 border-red-100"
+                      : "bg-gray-50 border-gray-200"
+                      }`}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -774,11 +768,10 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
                     طريقة الدفع
                   </span>
                   <Badge
-                    className={`text-xs font-medium ${
-                      order.paymentMethod === "COD"
-                        ? "bg-orange-100 text-orange-800 border-orange-200"
-                        : "bg-green-100 text-green-800 border-green-200"
-                    }`}
+                    className={`text-xs font-medium ${order.paymentMethod === "COD"
+                      ? "bg-orange-100 text-orange-800 border-orange-200"
+                      : "bg-green-100 text-green-800 border-green-200"
+                      }`}
                   >
                     {order.paymentMethod === "COD"
                       ? "الدفع عند الاستلام"
@@ -951,7 +944,7 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
                     {order.address}
                   </p>
                   <Badge variant="outline" className="text-xs font-medium">
-                    {order.city}
+                    {order.city?.name || order.city}
                   </Badge>
                 </div>
               </div>

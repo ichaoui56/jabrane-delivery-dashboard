@@ -369,6 +369,7 @@ export async function getOrderDetails(orderId: number) {
             createdAt: "desc",
           },
         },
+        city: true, // Add this line to include the city relation
       },
     })
 

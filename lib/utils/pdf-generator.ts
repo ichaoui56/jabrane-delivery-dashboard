@@ -23,11 +23,63 @@ const loadPdfMake = async () => {
             pdfMakeInstance.vfs = (window as any).pdfMake.vfs;
         }
 
+        // Load and register Arabic fonts
+        await loadArabicFonts();
+
+        // Register fonts with pdfmake
+        pdfMakeInstance.fonts = {
+            Lateef: {
+                normal: 'Lateef-Regular.ttf',
+                bold: 'Lateef-Bold.ttf',
+                italics: 'Lateef-Regular.ttf',
+                bolditalics: 'Lateef-Bold.ttf'
+            }
+        };
+
         // 🟢 ADD YOUR LOGO TO VFS
         // You need to convert your logo to base64 and add it here
         // or load it from a URL
     }
     return pdfMakeInstance;
+};
+
+// Function to load Arabic fonts and add them to VFS
+const loadArabicFonts = async () => {
+    try {
+        // Load Lateef Arabic fonts
+        const arabicRegularResponse = await fetch('/fonts/Lateef-Regular.ttf');
+        const arabicBoldResponse = await fetch('/fonts/Lateef-Bold.ttf');
+
+        const arabicRegularBlob = await arabicRegularResponse.blob();
+        const arabicBoldBlob = await arabicBoldResponse.blob();
+
+        // Convert to base64
+        const arabicRegularBase64 = await blobToBase64(arabicRegularBlob);
+        const arabicBoldBase64 = await blobToBase64(arabicBoldBlob);
+
+        // Add Arabic fonts to VFS
+        if (pdfMakeInstance.vfs) {
+            pdfMakeInstance.vfs['Lateef-Regular.ttf'] = arabicRegularBase64;
+            pdfMakeInstance.vfs['Lateef-Bold.ttf'] = arabicBoldBase64;
+        }
+    } catch (error) {
+        console.warn('Failed to load Arabic fonts:', error);
+    }
+};
+
+// Helper function to convert blob to base64
+const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = reader.result as string;
+            // Remove the data URL prefix
+            const base64 = result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
 };
 
 // Define types
@@ -198,7 +250,8 @@ export const createInvoicePDF = (order: OrderForPDF, merchantName: string, merch
                     {
                         width: '70%',
                         text: customerFirstName,
-                        fontSize: 9
+                        fontSize: 9,
+                        alignment: 'left' // LTR for Arabic text
                     }
                 ],
                 margin: [0, 0, 0, 2]
@@ -230,7 +283,8 @@ export const createInvoicePDF = (order: OrderForPDF, merchantName: string, merch
                     {
                         width: '70%',
                         text: cityName,
-                        fontSize: 9
+                        fontSize: 9,
+                        alignment: 'left' // LTR for Arabic text
                     }
                 ],
                 margin: [0, 0, 0, 4]
@@ -246,7 +300,8 @@ export const createInvoicePDF = (order: OrderForPDF, merchantName: string, merch
                     {
                         width: '70%',
                         text: address,
-                        fontSize: 9
+                        fontSize: 9,
+                        alignment: 'left' // LTR for Arabic text
                     }
                 ],
                 margin: [0, 0, 0, 4]
@@ -264,7 +319,8 @@ export const createInvoicePDF = (order: OrderForPDF, merchantName: string, merch
                     {
                         width: '70%',
                         text: `${note}`,
-                        fontSize: 9
+                        fontSize: 9,
+                        alignment: 'left' // LTR for Arabic text
                     }
                 ],
                 margin: [0, 0, 0, 4]
@@ -297,7 +353,7 @@ export const createInvoicePDF = (order: OrderForPDF, merchantName: string, merch
                         width: '70%',
                         text: `${order.orderItems.map(item => `${item.product.name} x (${item.quantity})`).join(', ')}`,
                         fontSize: 9,
-                        margin: [0, 0, 0, 1]
+                        alignment: 'left' // LTR for Arabic text
                     }
                 ],
                 margin: [0, 0, 0, 4]
@@ -461,7 +517,7 @@ export const createInvoicePDF = (order: OrderForPDF, merchantName: string, merch
             */
         ],
         defaultStyle: {
-            font: 'Roboto'
+            font: 'Lateef'
         }
     };
 
@@ -488,11 +544,11 @@ export const downloadInvoicePDF = async (order: OrderForPDF, merchantName: strin
 
         // Define fonts
         const fonts = {
-            Roboto: {
-                normal: 'Roboto-Regular.ttf',
-                bold: 'Roboto-Medium.ttf',
-                italics: 'Roboto-Italic.ttf',
-                bolditalics: 'Roboto-MediumItalic.ttf'
+            Lateef: {
+                normal: 'Lateef-Regular.ttf',
+                bold: 'Lateef-Bold.ttf',
+                italics: 'Lateef-Regular.ttf',
+                bolditalics: 'Lateef-Bold.ttf'
             }
         };
 

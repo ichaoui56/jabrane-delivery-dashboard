@@ -55,6 +55,16 @@ export const viewInvoice = async (
 
         const docDefinition = createInvoicePDF(order, merchantName, merchantPhone, logoBase64);
         
+        // Define fonts
+        const fonts = {
+            Lateef: {
+                normal: 'Lateef-Regular.ttf',
+                bold: 'Lateef-Bold.ttf',
+                italics: 'Lateef-Regular.ttf',
+                bolditalics: 'Lateef-Bold.ttf'
+            }
+        };
+        
         // Create a new window for the PDF
         const win = window.open('', '_blank');
         if (!win) {
@@ -62,7 +72,7 @@ export const viewInvoice = async (
         }
         
         // Generate the PDF and set it as the opened window's location
-        const pdfDoc = pdfMakeInstance.createPdf(docDefinition);
+        const pdfDoc = pdfMakeInstance.createPdf(docDefinition, null, fonts);
         await new Promise<void>((resolve, reject) => {
             pdfDoc.getBlob((blob: Blob) => {
                 try {

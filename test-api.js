@@ -11,7 +11,7 @@
  */
 
 const BASE_URL = process.env.API_URL || 'http://localhost:3000';
-const EMAIL = 'delivery.dakhla@sonic-delivery.com';
+const EMAIL = 'delivery.dakhla@jabrane-delivery.com';
 const PASSWORD = 'Delivery@123';
 
 // Colors for console output

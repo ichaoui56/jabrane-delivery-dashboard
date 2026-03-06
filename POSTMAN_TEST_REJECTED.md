@@ -12,7 +12,7 @@
 - **Body (raw JSON):**
   ```json
   {
-    "email": "delivery.dakhla@sonic-delivery.com",
+    "email": "delivery.dakhla@jabrane-delivery.com",
     "password": "Delivery@123"
   }
   ```
@@ -24,7 +24,7 @@
   "user": {
     "id": 1,
     "name": "...",
-    "email": "delivery.dakhla@sonic-delivery.com",
+    "email": "delivery.dakhla@jabrane-delivery.com",
     "role": "DELIVERYMAN",
     "deliveryMan": {
       "id": 1,

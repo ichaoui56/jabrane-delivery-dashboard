@@ -12,10 +12,10 @@ export async function CreateTransferContent() {
 
   const products = productsResult.success && productsResult.data ? productsResult.data : []
   const companyInfo = adminInfo.success && adminInfo.data ? adminInfo.data : {
-    companyName: "Sonixpress",
-    email: "deliverysonicdak@gmail.com", 
-    phone: "+212601717961",
-    address: "الداخلة - المركز - الحي الحسني"
+    companyName: "Jabrane Delivery",
+    email: "Ahmedjabran588@gmail.com", 
+    phone: "+2120702505050",
+    address: "السطات - المركز"
   }
 
   return <CreateTransferClient initialProducts={products} companyInfo={companyInfo} />

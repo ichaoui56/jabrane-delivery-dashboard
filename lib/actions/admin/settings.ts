@@ -331,9 +331,9 @@ export async function getAdminCompanyInfo() {
 
     const companyInfo = {
       companyName: admin.user.name || "Jabrane Delivery",
-      email: admin.user.email || "deliverysonicdak@gmail.com",
-      phone: admin.user.phone || "+212601717961",
-      address: admin.address || "الداخلة - المركز - الحي الحسني",
+      email: admin.user.email || "Ahmedjabran588@gmail.com",
+      phone: admin.user.phone || "+2120702505050",
+      address: admin.address || "السطات - المركز",
     }
 
     return {
@@ -346,10 +346,10 @@ export async function getAdminCompanyInfo() {
       success: false, 
       error: "حدث خطأ أثناء جلب بيانات الشركة",
       data: {
-        companyName: "Sonixpress",
-        email: "deliverysonicdak@gmail.com",
-        phone: "+212601717961",
-        address: "الداخلة - المركز - الحي الحسني",
+        companyName: "Jabrane Delivery",
+        email: "Ahmedjabran588@gmail.com",
+        phone: "+2120702505050",
+        address: "السطات - المركز",
       }
     }
   }

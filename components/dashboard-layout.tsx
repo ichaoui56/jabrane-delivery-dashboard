@@ -376,7 +376,7 @@ export function DashboardLayout({
 
   const [cachedUserData, setCachedUserData] = useState<typeof userData>(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('sonic_user_data')
+      const stored = localStorage.getItem('jabrane_user_data')
       if (stored) {
         try {
           return JSON.parse(stored)
@@ -391,7 +391,7 @@ export function DashboardLayout({
   useEffect(() => {
     if (userData && (userData.name || userData.email)) {
       setCachedUserData(userData)
-      localStorage.setItem('sonic_user_data', JSON.stringify(userData))
+      localStorage.setItem('jabrane_user_data', JSON.stringify(userData))
     }
   }, [userData])
 
@@ -425,7 +425,7 @@ export function DashboardLayout({
   }
 
   const userName = cachedUserData?.name || "مستخدم"
-  const userEmail = cachedUserData?.email || "user@sonic-delivery.com"
+  const userEmail = cachedUserData?.email || "user@jabrane-delivery.com"
   const userInitials = userName
     .split(" ")
     .slice(0, 2)
@@ -461,7 +461,7 @@ export function DashboardLayout({
                 <img src="/images/logo/logo.png" alt="" className="w-12 h-12" />
               </div>
               <div>
-                <div className="font-bold text-xl">SONIXPRESS</div>
+                <div className="font-bold text-xl">Jabrane Delivery</div>
                 <div className="text-xs text-gray-500">DELIVERY SERVICES</div>
               </div>
             </div>

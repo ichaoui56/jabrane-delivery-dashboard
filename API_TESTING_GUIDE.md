@@ -6,7 +6,7 @@ This guide provides step-by-step instructions to test the delivery man mobile AP
 
 - Your Next.js server should be running (default: `http://localhost:3000`)
 - You have a delivery man account with credentials:
-  - Email: `delivery.dakhla@sonic-delivery.com`
+  - Email: `delivery.dakhla@jabrane-delivery.com`
   - Password: `Delivery@123`
 
 ## Base URL
@@ -24,7 +24,7 @@ Replace `http://localhost:3000` with your actual server URL if different.
 curl -X POST http://localhost:3000/api/mobile/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "delivery.dakhla@sonic-delivery.com",
+    "email": "delivery.dakhla@jabrane-delivery.com",
     "password": "Delivery@123"
   }'
 ```
@@ -36,7 +36,7 @@ curl -X POST http://localhost:3000/api/mobile/auth/login \
   "user": {
     "id": 1,
     "name": "Delivery Man Name",
-    "email": "delivery.dakhla@sonic-delivery.com",
+    "email": "delivery.dakhla@jabrane-delivery.com",
     "role": "DELIVERYMAN",
     "deliveryMan": {
       "id": 1,
@@ -284,7 +284,7 @@ curl -X GET http://localhost:3000/api/mobile/auth/me \
   "user": {
     "id": 1,
     "name": "Delivery Man Name",
-    "email": "delivery.dakhla@sonic-delivery.com",
+    "email": "delivery.dakhla@jabrane-delivery.com",
     "role": "DELIVERYMAN",
     "deliveryMan": {
       "id": 1,
@@ -308,7 +308,7 @@ Save this as `test-api.sh` and make it executable:
 
 # Configuration
 BASE_URL="http://localhost:3000"
-EMAIL="delivery.dakhla@sonic-delivery.com"
+EMAIL="delivery.dakhla@jabrane-delivery.com"
 PASSWORD="Delivery@123"
 
 echo "🔐 Step 1: Logging in..."
@@ -377,7 +377,7 @@ chmod +x test-api.sh
 - Body (JSON):
   ```json
   {
-    "email": "delivery.dakhla@sonic-delivery.com",
+    "email": "delivery.dakhla@jabrane-delivery.com",
     "password": "Delivery@123"
   }
   ```

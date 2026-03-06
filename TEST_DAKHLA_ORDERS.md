@@ -31,7 +31,7 @@
 curl -X POST http://localhost:3000/api/mobile/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "delivery.dakhla@sonic-delivery.com",
+    "email": "delivery.dakhla@jabrane-delivery.com",
     "password": "Delivery@123"
   }' | jq '.'
 ```
@@ -43,7 +43,7 @@ curl -X POST http://localhost:3000/api/mobile/auth/login \
   "user": {
     "id": 1,
     "name": "...",
-    "email": "delivery.dakhla@sonic-delivery.com",
+    "email": "delivery.dakhla@jabrane-delivery.com",
     "role": "DELIVERYMAN",
     "deliveryMan": {
       "id": 1,
@@ -67,7 +67,7 @@ Or automatically extract it:
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:3000/api/mobile/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"delivery.dakhla@sonic-delivery.com","password":"Delivery@123"}' \
+  -d '{"email":"delivery.dakhla@jabrane-delivery.com","password":"Delivery@123"}' \
   | jq -r '.token')
 
 echo "Token saved: ${TOKEN:0:50}..."
@@ -123,13 +123,13 @@ curl -s -X GET http://localhost:3000/api/mobile/orders \
 ### Complete Test - Login + Get Orders
 
 ```bash
-TOKEN=$(curl -s -X POST http://localhost:3000/api/mobile/auth/login -H "Content-Type: application/json" -d '{"email":"delivery.dakhla@sonic-delivery.com","password":"Delivery@123"}' | jq -r '.token') && curl -s -X GET http://localhost:3000/api/mobile/orders -H "Authorization: Bearer $TOKEN" | jq '.'
+TOKEN=$(curl -s -X POST http://localhost:3000/api/mobile/auth/login -H "Content-Type: application/json" -d '{"email":"delivery.dakhla@jabrane-delivery.com","password":"Delivery@123"}' | jq -r '.token') && curl -s -X GET http://localhost:3000/api/mobile/orders -H "Authorization: Bearer $TOKEN" | jq '.'
 ```
 
 ### Get Orders Summary Table
 
 ```bash
-TOKEN=$(curl -s -X POST http://localhost:3000/api/mobile/auth/login -H "Content-Type: application/json" -d '{"email":"delivery.dakhla@sonic-delivery.com","password":"Delivery@123"}' | jq -r '.token') && curl -s -X GET http://localhost:3000/api/mobile/orders -H "Authorization: Bearer $TOKEN" | jq -r '.orders[] | "\(.orderCode) | \(.status) | \(.customerName) | \(.city)"'
+TOKEN=$(curl -s -X POST http://localhost:3000/api/mobile/auth/login -H "Content-Type: application/json" -d '{"email":"delivery.dakhla@jabrane-delivery.com","password":"Delivery@123"}' | jq -r '.token') && curl -s -X GET http://localhost:3000/api/mobile/orders -H "Authorization: Bearer $TOKEN" | jq -r '.orders[] | "\(.orderCode) | \(.status) | \(.customerName) | \(.city)"'
 ```
 
 ---

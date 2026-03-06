@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { auth } from "@/auth"
 
 export const metadata = {
-  title: "تسجيل الدخول - Sonixpress",
+  title: "تسجيل الدخول - Jabrane Delivery",
   description: "نظام تسجيل دخول آمن للتجار والعاملين بالتوصيل",
 }
 
@@ -34,7 +34,7 @@ export default async function LoginPage() {
             <img src="images/logo/logo.png" className="w-12 h-12" alt="" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Sonixpress</h1>
+            <h1 className="text-3xl font-bold">Jabrane Delivery</h1>
             <p className="text-sm opacity-90">خدمة التوصيل الموثوقة</p>
           </div>
         </div>

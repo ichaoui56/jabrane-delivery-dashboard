@@ -2,7 +2,7 @@
 
 # Test script to show orders for Dakhla delivery man
 BASE_URL="http://localhost:3000"
-EMAIL="delivery.dakhla@sonic-delivery.com"
+EMAIL="delivery.dakhla@jabrane-delivery.com"
 PASSWORD="Delivery@123"
 
 echo "🔐 Logging in..."

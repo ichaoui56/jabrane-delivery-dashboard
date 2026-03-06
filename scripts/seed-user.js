@@ -51,7 +51,7 @@ async function main() {
       email: "admin@jabrane-delivery.com",
       name: "Administrateur Système",
       password: Admin_Hashed_Password,
-      phone: "+212600000001",
+      phone: "+2120702505050",
       role: Role.ADMIN,
       image: null,
     },

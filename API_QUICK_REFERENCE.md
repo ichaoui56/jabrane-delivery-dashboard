@@ -5,7 +5,7 @@
 **Login:**
 ```bash
 POST /api/mobile/auth/login
-Body: { "email": "delivery.dakhla@sonic-delivery.com", "password": "Delivery@123" }
+Body: { "email": "delivery.dakhla@jabrane-delivery.com", "password": "Delivery@123" }
 Response: { "token": "...", "user": {...} }
 ```
 
@@ -80,7 +80,7 @@ PENDING → ACCEPTED (by admin) → ASSIGNED_TO_DELIVERY (by delivery man)
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:3000/api/mobile/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"delivery.dakhla@sonic-delivery.com","password":"Delivery@123"}' \
+  -d '{"email":"delivery.dakhla@jabrane-delivery.com","password":"Delivery@123"}' \
   | jq -r '.token')
 ```
 

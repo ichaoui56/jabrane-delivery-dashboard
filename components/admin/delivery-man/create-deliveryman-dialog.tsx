@@ -169,7 +169,7 @@ export function CreateDeliveryManDialog({
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
-                placeholder="example@sonic-delivery.com"
+                placeholder="example@jabrane-delivery.com"
               />
             </div>
 

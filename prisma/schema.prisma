@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ADD CITY MODEL
+// City Model
 model City {
   id         Int      @id @default(autoincrement())
   name       String   @unique
@@ -27,6 +27,7 @@ model City {
   @@index([createdAt(sort: Desc)], map: "City_createdAt_desc_idx")
 }
 
+// User Model
 model User {
   id                  Int            @id @default(autoincrement())
   name                String
@@ -49,6 +50,7 @@ model User {
   @@index([phone], map: "User_phone_idx")
 }
 
+// Admin Model
 model Admin {
   id        Int      @id @default(autoincrement())
   userId    Int      @unique
@@ -57,21 +59,21 @@ model Admin {
   user      User     @relation(fields: [userId], references: [id])
 }
 
+// Merchant Model
 model Merchant {
-  id               Int               @id @default(autoincrement())
-  userId           Int               @unique
+  id               Int            @id @default(autoincrement())
+  userId           Int            @unique
   companyName      String?
   rib              String?
   bankName         String?
-  balance          Float             @default(0)
-  totalEarned      Float             @default(0)
-  baseFee          Float             @default(0)
-  createdAt        DateTime          @default(now())
-  user             User              @relation(fields: [userId], references: [id])
+  balance          Float          @default(0)
+  totalEarned      Float          @default(0)
+  baseFee          Float          @default(0) // Per-order platform fee
+  createdAt        DateTime       @default(now())
+  user             User           @relation(fields: [userId], references: [id])
   moneyTransfers   MoneyTransfer[]
   orders           Order[]
   products         Product[]
-  productTransfers ProductTransfer[]
 
   @@index([userId], map: "Merchant_userId_idx")
   @@index([createdAt(sort: Desc)], map: "Merchant_createdAt_desc_idx")
@@ -80,6 +82,7 @@ model Merchant {
   @@index([totalEarned(sort: Desc)], map: "Merchant_totalEarned_desc_idx")
 }
 
+// Product Model
 model Product {
   id             Int            @id @default(autoincrement())
   merchantId     Int
@@ -92,9 +95,9 @@ model Product {
   lowStockAlert  Int            @default(3)
   isActive       Boolean        @default(true)
   createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   orderItems     OrderItem[]
   merchant       Merchant       @relation(fields: [merchantId], references: [id])
-  TransferItem   TransferItem[]
 
   @@index([merchantId], map: "Product_merchantId_idx")
   @@index([merchantId, isActive], map: "Product_merchantId_isActive_idx")
@@ -110,45 +113,7 @@ model Product {
   @@index([name], map: "Product_name_idx")
 }
 
-model ProductTransfer {
-  id                     Int            @id @default(autoincrement())
-  transferCode           String         @unique
-  merchantId             Int
-  deliveryCompany        String?
-  trackingNumber         String?
-  note                   String?
-  status                 TransferStatus @default(PENDING)
-  shippedAt              DateTime?
-  deliveredToWarehouseAt DateTime?
-  createdAt              DateTime       @default(now())
-  updatedAt              DateTime       @updatedAt
-  merchant               Merchant       @relation(fields: [merchantId], references: [id])
-  transferItems          TransferItem[]
-
-  @@index([merchantId], map: "ProductTransfer_merchantId_idx")
-  @@index([merchantId, createdAt(sort: Desc)], map: "ProductTransfer_merchantId_createdAt_desc_idx")
-  @@index([merchantId, status], map: "ProductTransfer_merchantId_status_idx")
-  @@index([status], map: "ProductTransfer_status_idx")
-  @@index([trackingNumber], map: "ProductTransfer_trackingNumber_idx")
-  @@index([createdAt(sort: Desc)], map: "ProductTransfer_createdAt_desc_idx")
-  @@index([deliveredToWarehouseAt], map: "ProductTransfer_deliveredToWarehouseAt_idx")
-  @@index([merchantId, status, createdAt(sort: Desc)], map: "ProductTransfer_merchantId_status_createdAt_desc_idx")
-}
-
-model TransferItem {
-  id         Int             @id @default(autoincrement())
-  transferId Int
-  productId  Int
-  quantity   Int
-  product    Product         @relation(fields: [productId], references: [id])
-  transfer   ProductTransfer @relation(fields: [transferId], references: [id])
-
-  @@index([transferId], map: "TransferItem_transferId_idx")
-  @@index([productId], map: "TransferItem_productId_idx")
-  @@index([transferId, productId], map: "TransferItem_transferId_productId_idx")
-  @@index([quantity], map: "TransferItem_quantity_idx")
-}
-
+// Order Model
 model Order {
   id                     Int               @id @default(autoincrement())
   orderCode              String            @unique
@@ -175,12 +140,14 @@ model Order {
   createdAt              DateTime          @default(now())
   deliveredAt            DateTime?
   updatedAt              DateTime          @updatedAt
-  Notification           Notification[]
+
+  // Relations
+  notification           Notification[]
   deliveryAttemptHistory DeliveryAttempt[]
   deliveryNotes          DeliveryNote[]
-  deliveryMan            DeliveryMan?      @relation(fields: [deliveryManId], references: [id])
-  merchant               Merchant          @relation(fields: [merchantId], references: [id])
-  city                   City              @relation(fields: [cityId], references: [id])
+  deliveryMan            DeliveryMan?       @relation(fields: [deliveryManId], references: [id])
+  merchant               Merchant           @relation(fields: [merchantId], references: [id])
+  city                   City               @relation(fields: [cityId], references: [id])
   orderItems             OrderItem[]
 
   @@index([merchantId], map: "Order_merchantId_idx")
@@ -205,9 +172,11 @@ model Order {
   @@index([customerName], map: "Order_customerName_idx")
   @@index([address], map: "Order_address_idx")
   @@index([merchantId, deliveryManId, createdAt(sort: Desc)], map: "Order_merchantId_deliveryManId_createdAt_desc_idx")
+  @@index([delivery_date], map: "Order_delivery_date_idx")
+  @@index([previous_delivery_date], map: "Order_previous_delivery_date_idx")
 }
 
-// NEW: Delivery Note Model
+// Delivery Note Model
 model DeliveryNote {
   id            Int         @id @default(autoincrement())
   orderId       Int
@@ -220,26 +189,18 @@ model DeliveryNote {
   order         Order       @relation(fields: [orderId], references: [id])
   deliveryMan   DeliveryMan @relation(fields: [deliveryManId], references: [id])
 
-  // Existing indexes with explicit names
   @@index([orderId], map: "DeliveryNote_orderId_idx")
   @@index([deliveryManId], map: "DeliveryNote_deliveryManId_idx")
   @@index([createdAt(sort: Desc)], map: "DeliveryNote_createdAt_desc_idx")
   @@index([orderId, createdAt(sort: Desc)], map: "DeliveryNote_orderId_createdAt_desc_idx")
   @@index([deliveryManId, createdAt(sort: Desc)], map: "DeliveryNote_deliveryManId_createdAt_desc_idx")
-
-  // Additional indexes with unique names
   @@index([isPrivate], map: "DeliveryNote_isPrivate_idx")
   @@index([deliveryManId, isPrivate], map: "DeliveryNote_deliveryManId_isPrivate_idx")
   @@index([orderId, deliveryManId], map: "DeliveryNote_orderId_deliveryManId_idx")
-  @@index([deliveryManId, orderId], map: "DeliveryNote_deliveryManId_orderId_idx")
-  @@index([deliveryManId, orderId, createdAt(sort: Desc)], map: "DeliveryNote_deliveryManId_orderId_createdAt_desc_idx")
   @@index([updatedAt(sort: Desc)], map: "DeliveryNote_updatedAt_desc_idx")
-  @@index([deliveryManId, isPrivate, createdAt(sort: Desc)], map: "DeliveryNote_deliveryManId_isPrivate_createdAt_desc_idx")
-  @@index([orderId, isPrivate], map: "DeliveryNote_orderId_isPrivate_idx")
-  @@index([createdAt(sort: Asc)], map: "DeliveryNote_createdAt_asc_idx")
-  @@index([deliveryManId, updatedAt(sort: Desc)], map: "DeliveryNote_deliveryManId_updatedAt_desc_idx")
 }
 
+// Delivery Attempt Model
 model DeliveryAttempt {
   id            Int           @id @default(autoincrement())
   orderId       Int
@@ -262,6 +223,7 @@ model DeliveryAttempt {
   @@index([deliveryManId, attemptedAt(sort: Desc)], map: "DeliveryAttempt_deliveryManId_attemptedAt_desc_idx")
 }
 
+// Order Item Model
 model OrderItem {
   id            Int     @id @default(autoincrement())
   orderId       Int
@@ -282,6 +244,7 @@ model OrderItem {
   @@index([productId, orderId], map: "OrderItem_productId_orderId_idx")
 }
 
+// Delivery Man Model
 model DeliveryMan {
   id                   Int               @id @default(autoincrement())
   userId               Int               @unique
@@ -316,6 +279,7 @@ model DeliveryMan {
   @@index([active, totalDeliveries(sort: Desc)], map: "DeliveryMan_active_totalDeliveries_desc_idx")
 }
 
+// Money Transfer Model
 model MoneyTransfer {
   id            Int          @id @default(autoincrement())
   merchantId    Int?
@@ -339,6 +303,7 @@ model MoneyTransfer {
   @@index([deliveryManId, amount, transferDate(sort: Desc)], map: "MoneyTransfer_deliveryManId_amount_transferDate_desc_idx")
 }
 
+// Notification Model
 model Notification {
   id        Int      @id @default(autoincrement())
   title     String
@@ -361,6 +326,7 @@ model Notification {
   @@index([userId, isRead, createdAt(sort: Desc)], map: "Notification_userId_isRead_createdAt_desc_idx")
 }
 
+// Enums
 enum Role {
   ADMIN
   MERCHANT
@@ -380,13 +346,6 @@ enum OrderStatus {
 enum PaymentMethod {
   COD
   PREPAID
-}
-
-enum TransferStatus {
-  PENDING
-  IN_TRANSIT
-  DELIVERED_TO_WAREHOUSE
-  CANCELLED
 }
 
 enum AttemptStatus {

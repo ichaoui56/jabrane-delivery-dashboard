@@ -1,11 +1,10 @@
 import { DashboardLayoutWrapper } from "@/components/dashboard-layout-wrapper"
-import { CreateOrderContent } from "@/components/merchant/orders/add/create-order-content"
+import { CreateOrderClient } from "@/components/merchant/orders/add/create-order-client"
 
 export default function CreateOrderPage() {
-
   return (
     <DashboardLayoutWrapper userRole="MERCHANT" expectedRole="MERCHANT">
-      <CreateOrderContent />
+      <CreateOrderClient />
     </DashboardLayoutWrapper>
   )
 }

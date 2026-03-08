@@ -9,7 +9,7 @@ interface SearchParams {
   status?: string
 }
 
-export default function OrdersPage({ 
+export default async function OrdersPage({ 
   searchParams 
 }: { 
   searchParams: Promise<SearchParams>

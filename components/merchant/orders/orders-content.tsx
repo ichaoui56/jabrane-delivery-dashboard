@@ -1,4 +1,4 @@
-import { getMerchantOrders, getMerchantProducts } from "@/lib/actions/order.actions"
+import { getMerchantOrders } from "@/lib/actions/order.actions"
 import { OrdersClient } from "./orders-client"
 
 interface SearchParams {
@@ -19,18 +19,15 @@ export async function OrdersContent({
   const limit = 20
   
   const ordersResult = await getMerchantOrders(page, limit, statusFilter, searchQuery)
-  const products = await getMerchantProducts()
-  const hasProducts = products.length > 0
 
   return (
     <OrdersClient 
-      initialOrders={ordersResult.data} 
-      totalOrders={ordersResult.total}
-      currentPage={ordersResult.page}
-      totalPages={ordersResult.totalPages}
+      initialOrders={ordersResult.data || []} 
+      totalOrders={ordersResult.total || 0}
+      currentPage={ordersResult.page || 1}
+      totalPages={ordersResult.totalPages || 1}
       searchQuery={searchQuery}
       statusFilter={statusFilter}
-      hasProducts={hasProducts}
     />
   )
 }

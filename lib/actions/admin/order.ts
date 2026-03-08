@@ -752,3 +752,248 @@ export async function assignDeliveryMan(orderId: number, deliveryManId: number, 
     return { success: false, error: "حدث خطأ أثناء تعيين الموصل" }
   }
 }
+
+export async function getAllOrdersForAdmin(filters?: {
+  search?: string
+  merchantId?: string
+  cityId?: string
+  status?: string
+  paymentMethod?: string
+  startDate?: string
+  endDate?: string
+  page?: number
+  limit?: number
+}) {
+  try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return { success: false, error: "غير مصرح" }
+    }
+
+    const page = filters?.page || 1
+    const limit = filters?.limit || 20
+    const skip = (page - 1) * limit
+
+    // Build where clause
+    const where: any = {}
+
+    // Search filter
+    if (filters?.search) {
+      where.OR = [
+        { orderCode: { contains: filters.search, mode: 'insensitive' } },
+        { customerName: { contains: filters.search, mode: 'insensitive' } },
+        { customerPhone: { contains: filters.search, mode: 'insensitive' } },
+        { address: { contains: filters.search, mode: 'insensitive' } },
+        { merchant: { user: { name: { contains: filters.search, mode: 'insensitive' } } } },
+        { deliveryMan: { user: { name: { contains: filters.search, mode: 'insensitive' } } } }
+      ]
+    }
+
+    // Merchant filter
+    if (filters?.merchantId && filters.merchantId !== "all") {
+      where.merchantId = parseInt(filters.merchantId)
+    }
+
+    // City filter
+    if (filters?.cityId && filters.cityId !== "all") {
+      where.cityId = parseInt(filters.cityId)
+    }
+
+    // Status filter
+    if (filters?.status && filters.status !== "all") {
+      where.status = filters.status
+    }
+
+    // Payment method filter
+    if (filters?.paymentMethod && filters.paymentMethod !== "all") {
+      where.paymentMethod = filters.paymentMethod
+    }
+
+    // Date range filter
+    if (filters?.startDate || filters?.endDate) {
+      where.createdAt = {}
+      if (filters.startDate) {
+        where.createdAt.gte = new Date(filters.startDate)
+      }
+      if (filters.endDate) {
+        const endDate = new Date(filters.endDate)
+        endDate.setHours(23, 59, 59, 999)
+        where.createdAt.lte = endDate
+      }
+    }
+
+    // Get orders with count
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          merchant: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                  phone: true
+                }
+              }
+            }
+          },
+          deliveryMan: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  phone: true
+                }
+              }
+            }
+          },
+          city: {
+            select: {
+              name: true,
+              code: true
+            }
+          },
+          orderItems: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  sku: true
+                }
+              }
+            }
+          },
+          deliveryAttemptHistory: {
+            orderBy: { attemptedAt: 'desc' },
+            take: 1
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.order.count({ where })
+    ])
+
+    // Get merchants for filter dropdown
+    const merchants = await prisma.merchant.findMany({
+      include: {
+        user: {
+          select: {
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        user: {
+          name: 'asc'
+        }
+      }
+    })
+
+    // Get cities for filter dropdown
+    const cities = await prisma.city.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' }
+    })
+
+    const totalPages = Math.ceil(total / limit)
+
+    return {
+      success: true,
+      data: {
+        orders,
+        merchants,
+        cities,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages
+        }
+      }
+    }
+  } catch (error) {
+    console.error("[v0] Error in getAllOrdersForAdmin:", error)
+    return { success: false, error: "حدث خطأ أثناء جلب الطلبات" }
+  }
+}
+
+export async function getOrderStats() {
+  try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return { success: false, error: "غير مصرح" }
+    }
+
+    const [
+      totalOrders,
+      pendingOrders,
+      acceptedOrders,
+      assignedOrders,
+      deliveredOrders,
+      delayedOrders,
+      cancelledOrders,
+      totalRevenue,
+      todayOrders,
+      thisWeekOrders,
+      thisMonthOrders
+    ] = await Promise.all([
+      prisma.order.count(),
+      prisma.order.count({ where: { status: "PENDING" } }),
+      prisma.order.count({ where: { status: "ACCEPTED" } }),
+      prisma.order.count({ where: { status: "ASSIGNED_TO_DELIVERY" } }),
+      prisma.order.count({ where: { status: "DELIVERED" } }),
+      prisma.order.count({ where: { status: "DELAYED" } }),
+      prisma.order.count({ where: { status: { in: ["REJECTED", "CANCELLED"] } } }),
+      prisma.order.aggregate({
+        where: { status: "DELIVERED" },
+        _sum: { totalPrice: true }
+      }),
+      prisma.order.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0))
+          }
+        }
+      }),
+      prisma.order.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          }
+        }
+      }),
+      prisma.order.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+          }
+        }
+      })
+    ])
+
+    return {
+      success: true,
+      data: {
+        totalOrders,
+        pendingOrders,
+        acceptedOrders,
+        assignedOrders,
+        deliveredOrders,
+        delayedOrders,
+        cancelledOrders,
+        totalRevenue: totalRevenue._sum.totalPrice || 0,
+        todayOrders,
+        thisWeekOrders,
+        thisMonthOrders
+      }
+    }
+  } catch (error) {
+    console.error("[v0] Error in getOrderStats:", error)
+    return { success: false, error: "حدث خطأ أثناء جلب الإحصائيات" }
+  }
+}

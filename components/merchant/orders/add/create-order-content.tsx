@@ -4,5 +4,5 @@ import { CreateOrderClient } from "./create-order-client"
 export async function CreateOrderContent() {
   const products = await getMerchantProducts()
 
-  return <CreateOrderClient initialProducts={products} />
+  return <CreateOrderClient initialProducts={products.data} />
 }

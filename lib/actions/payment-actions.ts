@@ -1,11 +1,13 @@
-import { cache } from 'react';
-import { prisma } from '@/lib/db';
-import { getCurrentUser } from './auth-actions';
+"use server"
+
+import { prisma } from "@/lib/db"
+import { getCurrentUser } from "@/lib/actions/auth-actions"
+import { cache } from "react"
 
 export const getMerchantPaymentData = cache(async () => {
   try {
-    const user = await getCurrentUser();
-    if (!user) return null;
+    const user = await getCurrentUser()
+    if (!user) return null
 
     const [merchant, deliveredOrders] = await Promise.all([
       prisma.merchant.findUnique({
@@ -57,13 +59,10 @@ export const getMerchantPaymentData = cache(async () => {
         orderBy: { deliveredAt: 'desc' },
         take: 20,
       }),
-    ]);
+    ])
 
-    if (!merchant) return null;
+    if (!merchant) return null
 
-    // IMPORTANT:
-    // Do NOT join Orders and MoneyTransfers in a single aggregation query.
-    // Doing so creates a cartesian product (orders x transfers), which multiplies sums.
     const [ordersAgg, codAgg, prepaidAgg, transfersAgg] = await Promise.all([
       prisma.order.aggregate({
         where: {
@@ -74,7 +73,6 @@ export const getMerchantPaymentData = cache(async () => {
           totalPrice: true,
         },
       }),
-
       prisma.order.aggregate({
         where: {
           merchantId: merchant.id,
@@ -85,7 +83,6 @@ export const getMerchantPaymentData = cache(async () => {
           merchantEarning: true,
         },
       }),
-
       prisma.order.aggregate({
         where: {
           merchantId: merchant.id,
@@ -96,7 +93,6 @@ export const getMerchantPaymentData = cache(async () => {
           merchantEarning: true,
         },
       }),
-
       prisma.moneyTransfer.aggregate({
         where: {
           merchantId: merchant.id,
@@ -105,26 +101,29 @@ export const getMerchantPaymentData = cache(async () => {
           amount: true,
         },
       }),
-    ]);
+    ])
 
     const paymentHistory = await prisma.moneyTransfer.findMany({
       where: { merchantId: merchant.id },
       orderBy: { transferDate: 'desc' },
       take: 20,
-    });
+    })
 
     return {
-      totalRevenue: Number(ordersAgg._sum.totalPrice ?? 0),
-      currentBalance: merchant.balance,
-      totalPaidByAdmin: Number(transfersAgg._sum.amount ?? 0),
-      merchantBaseFee: merchant.baseFee,
-      totalAmountOwedByAdmin: Number(codAgg._sum.merchantEarning ?? 0),
-      totalAmountOwedToCompany: Math.abs(Number(prepaidAgg._sum.merchantEarning ?? 0)),
-      paymentHistory,
-      deliveredOrders,
-    };
+      success: true,
+      data: {
+        totalRevenue: Number(ordersAgg._sum.totalPrice ?? 0),
+        currentBalance: merchant.balance,
+        totalPaidByAdmin: Number(transfersAgg._sum.amount ?? 0),
+        merchantBaseFee: merchant.baseFee,
+        totalAmountOwedByAdmin: Number(codAgg._sum.merchantEarning ?? 0),
+        totalAmountOwedToCompany: Math.abs(Number(prepaidAgg._sum.merchantEarning ?? 0)),
+        paymentHistory,
+        deliveredOrders,
+      }
+    }
   } catch (error) {
-    console.error('[v0] Error fetching payment data:', error);
-    return null;
+    console.error("[v0] Error in getMerchantPaymentData:", error)
+    return { success: false, error: "فشل في جلب بيانات المدفوعات" }
   }
-});
+})

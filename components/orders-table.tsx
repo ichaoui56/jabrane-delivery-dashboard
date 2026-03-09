@@ -59,9 +59,12 @@ import {
   ShoppingBag,
   Truck,
   AlertCircle,
-  Percent
+  Percent,
+  Printer
 } from "lucide-react"
 import { createSlugWithId } from "@/lib/utils/slug"
+import { viewInvoice } from "@/lib/utils/pdf-client"
+import { getCurrentUser } from "@/lib/actions/auth-actions"
 
 type Order = any
 type City = {
@@ -136,6 +139,7 @@ export function OrdersTable({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [baseFee, setBaseFee] = useState<number>(0)
   const [loadingBaseFee, setLoadingBaseFee] = useState(true)
+  const [generatingPdfOrderId, setGeneratingPdfOrderId] = useState<number | null>(null)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -265,6 +269,53 @@ export function OrdersTable({
       })
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleGeneratePDF = async (order: Order) => {
+    setGeneratingPdfOrderId(order.id)
+    try {
+      const currentUser = await getCurrentUser()
+      
+      const orderForPDF = {
+        orderCode: order.orderCode,
+        customerName: order.customerName,
+        customerPhone: order.customerPhone,
+        address: order.address,
+        city: order.city?.name || order.city,
+        totalPrice: order.totalPrice,
+        paymentMethod: order.paymentMethod,
+        createdAt: order.createdAt,
+        note: order.note || '',
+        orderItems: order.orderItems.map((item: any) => ({
+          id: item.id,
+          quantity: item.quantity,
+          product: {
+            name: item.product.name,
+          },
+        })),
+      }
+
+      const logoUrl = '/images/logo/blue-logo.png'
+      const result = await viewInvoice(
+        orderForPDF,
+        currentUser?.name || "—",
+        currentUser?.phone || "—",
+        logoUrl
+      )
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to view PDF')
+      }
+    } catch (error) {
+      console.error("[v0] Error viewing PDF:", error)
+      toast({
+        title: "✗ خطأ",
+        description: "فشل في فتح الفاتورة",
+        variant: "destructive",
+      })
+    } finally {
+      setGeneratingPdfOrderId(null)
     }
   }
 
@@ -601,6 +652,17 @@ export function OrdersTable({
                         عرض التفاصيل
                       </Button>
                     </Link>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleGeneratePDF(order)}
+                      disabled={generatingPdfOrderId === order.id}
+                      className="text-green-600 border-green-600 hover:bg-green-600 hover:text-white transition-colors"
+                    >
+                      <Printer className="w-4 h-4 ml-1" />
+                      {generatingPdfOrderId === order.id ? "جاري الفتح..." : "عرض الفاتورة"}
+                    </Button>
 
                     {enableMerchantEditDelete && order.status === "PENDING" && (
                       <>

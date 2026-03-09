@@ -144,7 +144,7 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2 sm:gap-3 justify-start sm:justify-end">
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             className="border-[#048dba] text-[#048dba] hover:bg-[#048dba] hover:text-white transition-all shadow-sm h-10 px-4"
@@ -204,10 +204,10 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
             ) : (
               <span className="flex items-center gap-2">
                 <Printer className="h-4 w-4" />
-                <span>تحميل الفاتورة</span>
+                <span>تحميل </span>
               </span>
             )}
-          </Button>
+          </Button> */}
 
           <Button
             variant="outline"

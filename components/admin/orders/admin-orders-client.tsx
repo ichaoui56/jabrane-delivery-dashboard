@@ -17,7 +17,7 @@ import { Search, Filter, ArrowUpRight, Package, Truck, CheckCircle2, Clock, Aler
 import { UpdateOrderStatusDialog } from "./update-order-status-dialog"
 import { AssignDeliveryManDialog } from "./assign-delivery-man-dialog"
 import { UpdateDeliveryDateDialog } from "./update-delivery-date-dialog"
-import { generateAndDownloadInvoice } from "@/lib/utils/pdf-client"
+import { generateAndDownloadInvoice, viewInvoice } from "@/lib/utils/pdf-client"
 import { useToast } from "@/hooks/use-toast"
 import { getAllOrders } from "@/lib/actions/admin/order"
 import { createSlugWithId } from "@/lib/utils/slug"
@@ -242,9 +242,6 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
 
   // Handle PDF generation
   const handleGeneratePDF = async (order: Order) => {
-    
-    
-
     setGeneratingPdfOrderId(order.id)
     try {
       const orderForPDF = {
@@ -267,26 +264,21 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
       }
 
       const logoUrl = '/images/logo/blue-logo.png'
-      const result = await generateAndDownloadInvoice(
+      const result = await viewInvoice(
         orderForPDF,
         order.merchant?.user?.name || "—",
         order.merchant?.user?.phone || "—",
         logoUrl
       )
 
-      if (result.success) {
-        toast({
-          title: "✓ تم إنشاء الفاتورة",
-          description: "تم إنشاء الفاتورة بنجاح وتنزيلها",
-        })
-      } else {
-        throw new Error(result.error || 'Failed to generate PDF')
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to view PDF')
       }
     } catch (error) {
-      console.error("[v0] Error generating PDF:", error)
+      console.error("[v0] Error viewing PDF:", error)
       toast({
         title: "✗ خطأ",
-        description: "فشل في إنشاء الفاتورة",
+        description: "فشل في فتح الفاتورة",
         variant: "destructive",
       })
     } finally {
@@ -883,7 +875,7 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
                         className="w-full text-[#0586b5] hover:text-[#047395] hover:bg-blue-50 border-[#0586b5] transition-colors"
                       >
                         <Printer className="w-4 h-4 ml-2" />
-                        {generatingPdfOrderId === order.id ? "جاري الإنشاء..." : "طباعة الفاتورة"}
+                        {generatingPdfOrderId === order.id ? "جاري الفتح..." : "عرض الفاتورة"}
                       </Button>
                     </div>
                   </div>

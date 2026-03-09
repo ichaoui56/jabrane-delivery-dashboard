@@ -14,6 +14,16 @@ import { createOrderWithProducts, getMerchantBaseFee } from "@/lib/actions/order
 import { getAvailableCitiesForMerchant } from "@/lib/actions/order.actions"
 import { toast } from "sonner"
 import { OptimizedImage } from "@/components/optimized-image"
+
+// Database product type
+type DatabaseProduct = {
+  id: number
+  name: string
+  description?: string | null
+  image?: string | null
+  sku?: string | null
+  stockQuantity: number
+}
 import { 
   ShoppingCart, 
   User, 
@@ -62,7 +72,7 @@ type CityOption = {
   code: string
 }
 
-export function CreateOrderForm() {
+export function CreateOrderForm({ initialProducts }: { initialProducts?: DatabaseProduct[] }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [loadingCities, setLoadingCities] = useState(false)

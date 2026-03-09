@@ -1,9 +1,16 @@
 import { getMerchantPaymentData } from "@/lib/actions/payment-actions"
 import { PaymentsClient } from "./payments-client"
-import { PaymentData } from "@/types/types"
 
 export async function PaymentsContent() {
-  const paymentData = await getMerchantPaymentData()
+  const result = await getMerchantPaymentData()
 
-  return <PaymentsClient initialData={paymentData as PaymentData} />
+  if (!result.success || !result.data) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-red-500">{result.error || "فشل في تحميل البيانات"}</p>
+      </div>
+    )
+  }
+
+  return <PaymentsClient initialData={result.data} />
 }
